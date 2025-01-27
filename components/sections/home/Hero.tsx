@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Plane, Users, Calendar } from 'lucide-react';
+import { Search, Plane, Users, Calendar, Building2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -10,6 +10,7 @@ import Image from 'next/image';
 
 export default function Hero() {
   const router = useRouter();
+  const [searchType, setSearchType] = useState('flight');
   const [destination, setDestination] = useState('');
   const [departureAirport, setDepartureAirport] = useState('');
   const [departureDate, setDepartureDate] = useState('');
@@ -19,8 +20,9 @@ export default function Hero() {
 
   const handleSearch = () => {
     const searchParams = new URLSearchParams({
+      type: searchType,
       destination,
-      departureAirport,
+      ...(searchType === 'flight' && { departureAirport }),
       departureDate,
       returnDate,
       adults,
@@ -30,8 +32,8 @@ export default function Hero() {
   };
 
   return (
-    <div className="relative h-[40vh] md:h-[75vh] w-full">
-      <div className="absolute inset-0 h-[75vh] md:h-full">
+    <div className="relative h-auto min-h-[40vh] md:h-[75vh] w-full">
+      <div className="absolute inset-0 h-full">
         <Image
           src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3"
           alt="Hero background"
@@ -45,7 +47,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-700/40 to-emerald-500/20" />
       </div>
 
-      <div className="relative flex flex-col items-center justify-start pt-6 md:pt-20 px-4 pb-6 h-full">
+      <div className="relative flex flex-col items-center justify-start pt-6 md:pt-20 px-4 pb-6">
         {/* Search Form with Embedded Header */}
         <div className="w-full max-w-xl md:max-w-3xl">
           <div className="backdrop-blur-md bg-white/95 rounded-2xl shadow-lg border border-white/20 overflow-hidden">
@@ -61,6 +63,36 @@ export default function Hero() {
 
             {/* Form Content */}
             <div className="p-3 md:p-6 space-y-3">
+              {/* Search Type Toggle */}
+              <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-lg">
+                <button
+                  onClick={() => setSearchType('flight')}
+                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    searchType === 'flight'
+                      ? 'bg-white text-blue-700 shadow-sm'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                >
+                  <Plane className="w-4 h-4" />
+                  <span className="hidden md:inline">Flight Only</span>
+                </button>
+                <button
+                  onClick={() => setSearchType('package')}
+                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    searchType === 'package'
+                      ? 'bg-white text-blue-700 shadow-sm'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    <Plane className="w-4 h-4" />
+                    <span className="text-xs">+</span>
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <span className="hidden md:inline ml-1">Flight + Hotel</span>
+                </button>
+              </div>
+
               {/* Destination and Departure */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -94,7 +126,7 @@ export default function Hero() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="flex items-center text-sm font-medium text-gray-700">
-                    <Calendar className="w-4 h-4 mr-2" /> Depart
+                    <Calendar className="w-4 h-4 mr-2" /> {searchType === 'flight' ? 'Depart' : 'Check-in'}
                   </label>
                   <Input
                     type="date"
@@ -106,7 +138,7 @@ export default function Hero() {
 
                 <div className="space-y-1">
                   <label className="flex items-center text-sm font-medium text-gray-700">
-                    <Calendar className="w-4 h-4 mr-2" /> Return
+                    <Calendar className="w-4 h-4 mr-2" /> {searchType === 'flight' ? 'Return' : 'Check-out'}
                   </label>
                   <Input
                     type="date"
@@ -117,7 +149,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Passengers */}
+              {/* Guests Selection */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="flex items-center text-sm font-medium text-gray-700">
@@ -160,7 +192,7 @@ export default function Hero() {
                 className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl shadow-lg transition-colors mt-2"
               >
                 <Search className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                Search Flights
+                Search {searchType === 'flight' ? 'Flights' : 'Flights + Hotels'}
               </Button>
             </div>
           </div>
