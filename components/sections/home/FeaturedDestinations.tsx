@@ -65,9 +65,9 @@ export default function FeaturedDestinations() {
   };
 
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-white to-blue-50">
+    <section className="py-8 md:py-16 px-4 bg-gradient-to-b from-white to-blue-50">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
             Featured Destinations
           </h2>

@@ -30,8 +30,8 @@ export default function Hero() {
   };
 
   return (
-    <div className="relative min-h-[90vh] w-full">
-      <div className="absolute inset-0">
+    <div className="relative h-[40vh] md:h-[75vh] w-full">
+      <div className="absolute inset-0 h-[75vh] md:h-full">
         <Image
           src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3"
           alt="Hero background"
@@ -41,114 +41,128 @@ export default function Hero() {
           className="object-cover"
           quality={75}
         />
+        {/* Subtle gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-700/40 to-emerald-500/20" />
       </div>
-      
-      {/* Subtle gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-700/40 to-emerald-500/20" />
-      
-      <div className="relative h-full flex flex-col items-center justify-center text-white px-4 py-20">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-center text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-          Plan Your Next Holiday
-        </h1>
-        <p className="text-xl md:text-2xl mb-12 text-center max-w-2xl font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-          Explore the world's most beautiful destinations with our curated travel experiences
-        </p>
-        
-        <div className="backdrop-blur-md bg-white/95 p-8 rounded-2xl shadow-lg w-full max-w-5xl border border-white/20 relative overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6 relative">
-            <div className="space-y-2 group">
-              <label className="flex items-center text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
-                <Plane className="w-4 h-4 mr-2" /> Destination
-              </label>
-              <Input
-                type="text"
-                placeholder="Where would you like to go?"
-                className="w-full bg-white border-gray-200 text-gray-900 placeholder:text-gray-500 focus:border-blue-700 focus:ring-2 focus:ring-emerald-100 transition-colors"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2 group">
-              <label className="flex items-center text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
-                <Plane className="w-4 h-4 mr-2" /> Departure Airport
-              </label>
-              <Input
-                type="text"
-                placeholder="Enter departure airport"
-                className="w-full bg-white border-gray-200 text-gray-900 placeholder:text-gray-500 focus:border-blue-700 focus:ring-2 focus:ring-emerald-100 transition-colors"
-                value={departureAirport}
-                onChange={(e) => setDepartureAirport(e.target.value)}
-              />
+
+      <div className="relative flex flex-col items-center justify-start pt-6 md:pt-20 px-4 pb-6 h-full">
+        {/* Search Form with Embedded Header */}
+        <div className="w-full max-w-xl md:max-w-3xl">
+          <div className="backdrop-blur-md bg-white/95 rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+            {/* Form Header - Now visible on all devices */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-3 md:p-4 text-center">
+              <h1 className="text-lg md:text-xl font-bold text-white mb-1">
+                Plan Your Next Holiday
+              </h1>
+              <p className="text-sm md:text-base text-blue-100">
+                Explore the world's most beautiful destinations
+              </p>
             </div>
 
-            <div className="space-y-2 group">
-              <label className="flex items-center text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
-                <Calendar className="w-4 h-4 mr-2" /> Departure Date
-              </label>
-              <Input
-                type="date"
-                className="w-full bg-white border-gray-200 text-gray-900 focus:border-blue-700 focus:ring-2 focus:ring-emerald-100 transition-colors"
-                value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)}
-              />
-            </div>
+            {/* Form Content */}
+            <div className="p-3 md:p-6 space-y-3">
+              {/* Destination and Departure */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Plane className="w-4 h-4 mr-2" /> Destination
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Where to?"
+                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Plane className="w-4 h-4 mr-2" /> From
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Departure airport"
+                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
+                    value={departureAirport}
+                    onChange={(e) => setDepartureAirport(e.target.value)}
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-2 group">
-              <label className="flex items-center text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
-                <Calendar className="w-4 h-4 mr-2" /> Return Date
-              </label>
-              <Input
-                type="date"
-                className="w-full bg-white border-gray-200 text-gray-900 focus:border-blue-700 focus:ring-2 focus:ring-emerald-100 transition-colors"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-              />
-            </div>
+              {/* Dates */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Calendar className="w-4 h-4 mr-2" /> Depart
+                  </label>
+                  <Input
+                    type="date"
+                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
+                    value={departureDate}
+                    onChange={(e) => setDepartureDate(e.target.value)}
+                  />
+                </div>
 
-            <div className="space-y-2 group">
-              <label className="flex items-center text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
-                <Users className="w-4 h-4 mr-2" /> Adults
-              </label>
-              <select
-                className="w-full h-10 px-3 rounded-md bg-white border border-gray-200 text-gray-900 focus:border-blue-700 focus:ring-2 focus:ring-emerald-100 transition-colors"
-                value={adults}
-                onChange={(e) => setAdults(e.target.value)}
+                <div className="space-y-1">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Calendar className="w-4 h-4 mr-2" /> Return
+                  </label>
+                  <Input
+                    type="date"
+                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
+                    value={returnDate}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Passengers */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Users className="w-4 h-4 mr-2" /> Adults
+                  </label>
+                  <select
+                    className="w-full h-9 px-3 rounded-md bg-white border border-gray-200 text-gray-900"
+                    value={adults}
+                    onChange={(e) => setAdults(e.target.value)}
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((num) => (
+                      <option key={num} value={num}>
+                        {num} Adult{num > 1 ? 's' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Users className="w-4 h-4 mr-2" /> Children
+                  </label>
+                  <select
+                    className="w-full h-9 px-3 rounded-md bg-white border border-gray-200 text-gray-900"
+                    value={children}
+                    onChange={(e) => setChildren(e.target.value)}
+                  >
+                    {[0, 1, 2, 3, 4].map((num) => (
+                      <option key={num} value={num}>
+                        {num} Child{num !== 1 ? 'ren' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Search Button */}
+              <Button 
+                onClick={handleSearch}
+                className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl shadow-lg transition-colors mt-2"
               >
-                {[1, 2, 3, 4, 5, 6].map((num) => (
-                  <option key={num} value={num}>
-                    {num} Adult{num > 1 ? 's' : ''}
-                  </option>
-                ))}
-              </select>
+                <Search className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                Search Flights
+              </Button>
             </div>
-
-            <div className="space-y-2 group">
-              <label className="flex items-center text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
-                <Users className="w-4 h-4 mr-2" /> Children (0-17)
-              </label>
-              <select
-                className="w-full h-10 px-3 rounded-md bg-white border border-gray-200 text-gray-900 focus:border-blue-700 focus:ring-2 focus:ring-emerald-100 transition-colors"
-                value={children}
-                onChange={(e) => setChildren(e.target.value)}
-              >
-                {[0, 1, 2, 3, 4].map((num) => (
-                  <option key={num} value={num}>
-                    {num} Child{num !== 1 ? 'ren' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="flex justify-center relative z-10">
-            <Button 
-              onClick={handleSearch}
-              className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg transition-colors"
-            >
-              <Search className="mr-2 h-5 w-5" />
-              Search Flights
-            </Button>
           </div>
         </div>
       </div>
