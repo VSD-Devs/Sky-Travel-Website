@@ -7,6 +7,16 @@ export const metadata: Metadata = {
   description: 'Edit holiday package details',
 };
 
+export async function generateStaticParams() {
+  // Hardcoded IDs for demonstration
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' }
+  ];
+}
+
 export default function EditHolidayPage({ params }: { params: { id: string } }) {
   const holiday = holidaysData[params.id];
 

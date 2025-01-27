@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import HolidayDetails from '@/components/sections/holidays/HolidayDetails';
+import { holidaysData } from '@/data/holidays';
 
-// This will be replaced with data from the API
+// Hardcoded destinations for demonstration
 const destinations = [
   { id: '1', name: 'Santorini, Greece' },
   { id: '2', name: 'Bali, Indonesia' },
@@ -10,10 +11,13 @@ const destinations = [
 ];
 
 export function generateStaticParams() {
-  // Return an array of objects with the id parameter
-  return destinations.map((destination) => ({
-    id: destination.id,
-  }));
+  // Return hardcoded IDs for demonstration
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' }
+  ];
 }
 
 // Generate metadata for each page
