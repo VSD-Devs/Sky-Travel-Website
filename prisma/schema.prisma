@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "darwin", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "sqlite" // Use SQLite for easy development, can change to PostgreSQL for production
+  url      = env("DATABASE_URL")
+}
+
+// Model for storing contact form enquiries
+model Enquiry {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  message   String
+  status    EnquiryStatus @default(NEW)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Status of enquiries
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESPONDED
+  CLOSED
+}
+
+// Model for admin users
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// User roles
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+// Model for holidays
+model Holiday {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  destination String
+  duration    String
+  price       Float
+  imageUrl    String?
+  featured    Boolean  @default(false)
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

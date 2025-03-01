@@ -1,338 +1,378 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
-import { Plus, X, ArrowLeft, ImagePlus } from 'lucide-react';
-import { Holiday } from '@/data/holidays';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+
+interface Holiday {
+  id?: string;
+  title: string;
+  description: string;
+  destination: string;
+  duration: string;
+  price: number;
+  imageUrl: string | null;
+  featured: boolean;
+  available: boolean;
+}
 
 interface HolidayFormProps {
   initialData?: Holiday;
+  isEditing?: boolean;
 }
 
-export default function HolidayForm({ initialData }: HolidayFormProps) {
-  const router = useRouter();
-  const [formData, setFormData] = useState<Partial<Holiday>>(
-    initialData || {
-      name: '',
-      tagline: '',
-      price: 0,
-      duration: '',
-      groupSize: '',
-      location: '',
-      description: '',
-      highlights: [''],
-      itinerary: [
-        {
-          day: 1,
-          title: '',
-          activities: ['']
-        }
-      ]
-    }
-  );
+const defaultHoliday: Holiday = {
+  title: '',
+  description: '',
+  destination: '',
+  duration: '',
+  price: 0,
+  imageUrl: null,
+  featured: false,
+  available: true,
+};
 
+export default function HolidayForm({ initialData, isEditing = false }: HolidayFormProps) {
+  const router = useRouter();
+  const [formData, setFormData] = useState<Holiday>(initialData || defaultHoliday);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(formData.imageUrl);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'price' ? parseFloat(value) : value,
+    }));
+  };
+
+  // Handle switch changes
+  const handleSwitchChange = (name: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  };
+
+  // Handle image file selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle image upload
+  const handleImageUpload = async () => {
+    if (!imageFile) return;
+
+    try {
+      setUploadingImage(true);
+      
+      // Create form data for upload
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      
+      // Upload image
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+      
+      const data = await response.json();
+      
+      // Update form data with image URL
+      setFormData((prev) => ({
+        ...prev,
+        imageUrl: data.imageUrl,
+      }));
+      
+      return data.imageUrl;
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      setError('Failed to upload image. Please try again.');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In real app, this would make an API call
-    console.log('Form submitted:', formData);
-    router.push('/admin/holidays');
-  };
-
-  const addHighlight = () => {
-    setFormData(prev => ({
-      ...prev,
-      highlights: [...(prev.highlights || []), '']
-    }));
-  };
-
-  const removeHighlight = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      highlights: prev.highlights?.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateHighlight = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      highlights: prev.highlights?.map((h, i) => i === index ? value : h)
-    }));
-  };
-
-  const addItineraryDay = () => {
-    setFormData(prev => ({
-      ...prev,
-      itinerary: [
-        ...(prev.itinerary || []),
-        {
-          day: (prev.itinerary?.length || 0) + 1,
-          title: '',
-          activities: ['']
+    setIsSubmitting(true);
+    setError(null);
+    
+    try {
+      // If there's a new image, upload it first
+      if (imageFile) {
+        const imageUrl = await handleImageUpload();
+        if (!imageUrl) {
+          setIsSubmitting(false);
+          return;
         }
-      ]
-    }));
-  };
-
-  const addActivity = (dayIndex: number) => {
-    setFormData(prev => ({
-      ...prev,
-      itinerary: prev.itinerary?.map((day, i) => 
-        i === dayIndex 
-          ? { ...day, activities: [...day.activities, ''] }
-          : day
-      )
-    }));
-  };
-
-  const updateActivity = (dayIndex: number, activityIndex: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      itinerary: prev.itinerary?.map((day, i) => 
-        i === dayIndex 
-          ? {
-              ...day,
-              activities: day.activities.map((act, j) => 
-                j === activityIndex ? value : act
-              )
-            }
-          : day
-      )
-    }));
+      }
+      
+      // Create or update holiday
+      const url = isEditing
+        ? `/api/admin/holidays/${initialData?.id}`
+        : '/api/admin/holidays';
+      
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save holiday');
+      }
+      
+      // Redirect to holidays list
+      router.push('/admin/holidays');
+      router.refresh();
+    } catch (err) {
+      console.error('Error saving holiday:', err);
+      setError('Failed to save holiday. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {initialData ? 'Edit Holiday' : 'Create New Holiday'}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              {initialData ? 'Update the holiday package details' : 'Add a new holiday package'}
-            </p>
-          </div>
-        </div>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-          {initialData ? 'Save Changes' : 'Create Holiday'}
-        </Button>
-      </div>
-
-      <div className="space-y-6">
-        {/* Basic Information */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Holiday Name
-              </label>
-              <Input
-                required
-                value={formData.name}
-                onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g. Santorini Paradise Escape"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tagline
-              </label>
-              <Input
-                required
-                value={formData.tagline}
-                onChange={e => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
-                placeholder="e.g. Experience the Magic of the Mediterranean"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <Input
-                required
-                value={formData.location}
-                onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="e.g. Santorini, Greece"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price
-              </label>
-              <Input
-                required
-                type="number"
-                value={formData.price}
-                onChange={e => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
-                placeholder="e.g. 1299"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Duration
-              </label>
-              <Input
-                required
-                value={formData.duration}
-                onChange={e => setFormData(prev => ({ ...prev, duration: e.target.value }))}
-                placeholder="e.g. 7 Days"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Group Size
-              </label>
-              <Input
-                required
-                value={formData.groupSize}
-                onChange={e => setFormData(prev => ({ ...prev, groupSize: e.target.value }))}
-                placeholder="e.g. 8-12"
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* Description */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Description</h2>
-          <Textarea
-            required
-            value={formData.description}
-            onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            placeholder="Describe the holiday experience..."
-            className="min-h-[150px]"
-          />
-        </Card>
-
-        {/* Images */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Images</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Main Image
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                <Button type="button" variant="outline" className="w-full">
-                  <ImagePlus className="w-4 h-4 mr-2" />
-                  Upload Main Image
-                </Button>
+    <div className="max-w-4xl mx-auto p-6">
+      <Button
+        variant="ghost"
+        className="mb-6"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Holidays
+      </Button>
+      
+      <Card className="bg-white">
+        <CardHeader>
+          <CardTitle>{isEditing ? 'Edit' : 'Add'} Holiday</CardTitle>
+        </CardHeader>
+        
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-6">
+            {error && (
+              <div className="bg-red-50 p-4 rounded-md text-red-600 text-sm mb-4">
+                {error}
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gallery Images
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                <Button type="button" variant="outline" className="w-full">
-                  <ImagePlus className="w-4 h-4 mr-2" />
-                  Upload Gallery Images
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Highlights */}
-        <Card className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Highlights</h2>
-            <Button type="button" onClick={addHighlight} variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Highlight
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {formData.highlights?.map((highlight, index) => (
-              <div key={index} className="flex gap-2">
-                <Input
-                  required
-                  value={highlight}
-                  onChange={e => updateHighlight(index, e.target.value)}
-                  placeholder="e.g. Sunset viewing at Oia"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => removeHighlight(index)}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Itinerary */}
-        <Card className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Itinerary</h2>
-            <Button type="button" onClick={addItineraryDay} variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Day
-            </Button>
-          </div>
-          <div className="space-y-6">
-            {formData.itinerary?.map((day, dayIndex) => (
-              <div key={dayIndex} className="border rounded-lg p-4">
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="destination">Destination</Label>
+                  <Input
+                    id="destination"
+                    name="destination"
+                    value={formData.destination}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Day {day.day}
-                    </label>
+                    <Label htmlFor="duration">Duration</Label>
                     <Input
+                      id="duration"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      placeholder="e.g. 7 nights"
                       required
-                      value={day.title}
-                      onChange={e => setFormData(prev => ({
-                        ...prev,
-                        itinerary: prev.itinerary?.map((d, i) => 
-                          i === dayIndex ? { ...d, title: e.target.value } : d
-                        )
-                      }))}
-                      placeholder="e.g. Arrival & Welcome"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="price">Price (£)</Label>
+                    <Input
+                      id="price"
+                      name="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      required
                     />
                   </div>
                 </div>
+                
                 <div className="space-y-3">
-                  {day.activities.map((activity, actIndex) => (
-                    <div key={actIndex} className="flex gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="featured">Featured</Label>
+                      <div className="text-sm text-gray-500">
+                        Highlight this holiday on the homepage
+                      </div>
+                    </div>
+                    <Switch
+                      id="featured"
+                      checked={formData.featured}
+                      onCheckedChange={(checked) => 
+                        handleSwitchChange('featured', checked)
+                      }
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="available">Available</Label>
+                      <div className="text-sm text-gray-500">
+                        Show this holiday on the website
+                      </div>
+                    </div>
+                    <Switch
+                      id="available"
+                      checked={formData.available}
+                      onCheckedChange={(checked) => 
+                        handleSwitchChange('available', checked)
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="min-h-[120px]"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="image">Holiday Image</Label>
+                  <div className="mt-2 space-y-3">
+                    {imagePreview ? (
+                      <div className="relative w-full aspect-video rounded-md overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imagePreview}
+                          alt="Holiday preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-200 rounded-md p-8 text-center">
+                        <Upload className="w-8 h-8 mx-auto text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-500">
+                          Upload an image for this holiday
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                      <Label
+                        htmlFor="image-upload"
+                        className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                      >
+                        {imagePreview ? 'Change Image' : 'Upload Image'}
+                      </Label>
                       <Input
-                        required
-                        value={activity}
-                        onChange={e => updateActivity(dayIndex, actIndex, e.target.value)}
-                        placeholder="e.g. Airport transfer"
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="sr-only"
                       />
-                      {actIndex === day.activities.length - 1 && (
+                      
+                      {imageFile && (
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => addActivity(dayIndex)}
+                          onClick={handleImageUpload}
+                          disabled={uploadingImage}
                         >
-                          <Plus className="w-4 h-4" />
+                          {uploadingImage ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            'Upload Now'
+                          )}
                         </Button>
                       )}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-    </form>
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {isEditing ? 'Updating...' : 'Creating...'}
+                </>
+              ) : (
+                isEditing ? 'Update Holiday' : 'Create Holiday'
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 } 
