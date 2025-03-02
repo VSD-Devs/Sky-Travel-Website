@@ -43,7 +43,7 @@ const continents = [
     id: 'oceania',
     name: 'Oceania',
     image: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80',
-    description: 'Experience the stunning natural beauty of Oceania, from Australia's vibrant cities and outback to New Zealand's dramatic landscapes and the idyllic islands of the South Pacific.',
+    description: 'Experience the stunning natural beauty of Oceania, from Australia\'s vibrant cities and outback to New Zealand\'s dramatic landscapes and the idyllic islands of the South Pacific.',
     destinations: ['Sydney', 'New Zealand', 'Fiji', 'Great Barrier Reef', 'Bora Bora', 'Tasmania']
   }
 ];
