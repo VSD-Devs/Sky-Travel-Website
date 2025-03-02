@@ -61,4 +61,40 @@ model Holiday {
   available   Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// Trip status enum
+enum TripStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// Trip Plan model for handling customer trip requests
+model TripPlan {
+  id            String     @id @default(uuid())
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Trip details
+  destination   String
+  tripType      String     // flight, hotel, both
+  departureDate DateTime
+  returnDate    DateTime
+  adults        Int        @default(1)
+  children      Int        @default(0)
+  infants       Int        @default(0)
+  
+  // Customer information
+  customerName  String
+  customerEmail String
+  
+  // Admin tracking fields
+  status        TripStatus @default(PENDING)
+  notes         String?
+  assignedTo    String?    // Staff member handling this request
+  
+  @@index([status])
+  @@index([createdAt])
 } 
