@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -19,6 +19,12 @@ import {
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Handle initial state after component mounts to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -38,13 +44,18 @@ export default function AdminSidebar() {
     return pathname === path || pathname?.startsWith(`${path}/`);
   };
 
+  // Prevent rendering until client-side to avoid hydration mismatch
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <>
       {/* Mobile Sidebar Toggle */}
       <div className="fixed top-0 left-0 z-50 md:hidden p-4">
         <button 
           onClick={toggleSidebar}
-          className="p-2 rounded-md bg-gray-800 text-white"
+          className="p-2 rounded-md bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-colors"
           aria-label="Toggle sidebar"
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
@@ -55,7 +66,7 @@ export default function AdminSidebar() {
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } md:shadow-xl`}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-center h-16 border-b border-gray-800">
@@ -70,7 +81,7 @@ export default function AdminSidebar() {
                 href={route.path}
                 className={`flex items-center px-4 py-3 rounded-md transition-colors ${
                   isActive(route.path)
-                    ? 'bg-gray-800 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
                 onClick={() => setIsSidebarOpen(false)}
@@ -99,6 +110,7 @@ export default function AdminSidebar() {
         <div
           className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
         ></div>
       )}
     </>

@@ -151,8 +151,8 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
   if (loading) {
     return (
       <AdminLayout>
-        <div className="container mx-auto py-6">
-          <div className="text-center py-8">Loading trip plan details...</div>
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
       </AdminLayout>
     );
@@ -161,13 +161,14 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
   if (error || !tripPlan) {
     return (
       <AdminLayout>
-        <div className="container mx-auto py-6">
-          <div className="text-center py-8 text-red-500">
+        <div className="space-y-6">
+          <div className="bg-red-50 text-red-600 p-4 rounded-md text-center">
             {error || 'Trip plan not found'}
           </div>
           <Button 
             variant="outline" 
             onClick={() => router.push('/admin/trip-plans')}
+            className="flex items-center"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Trip Plans
@@ -179,29 +180,56 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
   
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <div className="flex items-center mb-6">
-          <Button 
-            variant="outline" 
-            onClick={() => router.push('/admin/trip-plans')}
-            className="mr-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <h1 className="text-3xl font-bold">Trip Plan Details</h1>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push('/admin/trip-plans')}
+              className="mr-4"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold">Trip Plan Details</h1>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Select
+              value={status}
+              onValueChange={setStatus}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Change Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              onClick={updateTripPlan}
+              disabled={isSaving}
+              className="whitespace-nowrap"
+            >
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div>
-                    <CardTitle className="text-2xl">{tripPlan.destination} Trip</CardTitle>
+                    <CardTitle className="text-xl md:text-2xl">{tripPlan.destination} Trip</CardTitle>
                     <CardDescription>
                       <div className="flex items-center mt-1">
-                        <MapPin className="h-4 w-4 mr-1" />
+                        <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
                         {tripPlan.destination}
                       </div>
                     </CardDescription>
@@ -210,32 +238,32 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
                 </div>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="details">
-                  <TabsList className="mb-4">
+                <Tabs defaultValue="details" className="w-full">
+                  <TabsList className="w-full mb-4 grid grid-cols-3">
                     <TabsTrigger value="details">Trip Details</TabsTrigger>
                     <TabsTrigger value="customer">Customer Info</TabsTrigger>
                     <TabsTrigger value="notes">Admin Notes</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="details">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="font-medium text-gray-700 flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
+                        <h3 className="font-medium text-gray-700 flex items-center mb-3">
+                          <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
                           Travel Dates
                         </h3>
-                        <div className="mt-2">
+                        <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Departure:</span>
-                            <span>{formatDate(tripPlan.departureDate)}</span>
+                            <span className="font-medium">{formatDate(tripPlan.departureDate)}</span>
                           </div>
-                          <div className="flex justify-between items-center mt-2">
+                          <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Return:</span>
-                            <span>{formatDate(tripPlan.returnDate)}</span>
+                            <span className="font-medium">{formatDate(tripPlan.returnDate)}</span>
                           </div>
-                          <div className="flex justify-between items-center mt-2">
+                          <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Duration:</span>
-                            <span>
+                            <span className="font-medium">
                               {calculateDuration(tripPlan.departureDate, tripPlan.returnDate)} days
                             </span>
                           </div>
@@ -243,55 +271,54 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
                       </div>
                       
                       <div className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="font-medium text-gray-700 flex items-center">
-                          <User className="h-4 w-4 mr-2" />
-                          Travellers
+                        <h3 className="font-medium text-gray-700 flex items-center mb-3">
+                          <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                          Travelers
                         </h3>
-                        <div className="mt-2">
+                        <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Adults:</span>
-                            <span>{tripPlan.adults}</span>
+                            <span className="font-medium">{tripPlan.adults}</span>
                           </div>
-                          <div className="flex justify-between items-center mt-2">
+                          <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Children:</span>
-                            <span>{tripPlan.children}</span>
+                            <span className="font-medium">{tripPlan.children}</span>
                           </div>
-                          <div className="flex justify-between items-center mt-2">
+                          <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Infants:</span>
-                            <span>{tripPlan.infants}</span>
-                          </div>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="text-sm text-gray-500">Total Passengers:</span>
-                            <span>
-                              {tripPlan.adults + tripPlan.children + tripPlan.infants}
-                            </span>
+                            <span className="font-medium">{tripPlan.infants}</span>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="font-medium text-gray-700 flex items-center">
-                          <PlaneTakeoff className="h-4 w-4 mr-2" />
+                        <h3 className="font-medium text-gray-700 flex items-center mb-3">
+                          <PlaneTakeoff className="h-4 w-4 mr-2 flex-shrink-0" />
                           Trip Type
                         </h3>
-                        <div className="mt-2">
-                          <Badge variant="secondary">{tripPlan.tripType}</Badge>
+                        <div className="space-y-3">
+                          <div className="flex items-center">
+                            <span className="text-sm text-gray-500 mr-2">Request:</span>
+                            <span className="font-medium capitalize">{tripPlan.tripType}</span>
+                          </div>
                         </div>
                       </div>
-                      
+
                       <div className="bg-gray-50 p-4 rounded-md">
-                        <h3 className="font-medium text-gray-700 flex items-center">
-                          <Clock className="h-4 w-4 mr-2" />
-                          Submission Info
+                        <h3 className="font-medium text-gray-700 flex items-center mb-3">
+                          <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                          Request Details
                         </h3>
-                        <div className="mt-2">
+                        <div className="space-y-3">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-500">Submitted:</span>
-                            <span>{formatDate(tripPlan.createdAt)}</span>
+                            <span className="text-sm text-gray-500">Created:</span>
+                            <span className="font-medium">{formatDate(tripPlan.createdAt)}</span>
                           </div>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="text-sm text-gray-500">ID:</span>
-                            <span className="text-xs font-mono">{tripPlan.id}</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Reference:</span>
+                            <span className="font-medium text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                              {tripPlan.id.substring(0, 8)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -300,31 +327,28 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
                   
                   <TabsContent value="customer">
                     <div className="bg-gray-50 p-6 rounded-md">
-                      <h3 className="font-medium text-lg text-gray-700 mb-4">Customer Information</h3>
-                      
-                      <div className="space-y-4">
+                      <div className="flex flex-col space-y-4">
                         <div>
-                          <span className="text-sm text-gray-500 block">Name:</span>
-                          <span className="font-medium text-lg">{tripPlan.customerName}</span>
+                          <h3 className="font-medium text-gray-700 flex items-center mb-1">
+                            <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                            Customer Name
+                          </h3>
+                          <p className="text-lg">{tripPlan.customerName}</p>
                         </div>
                         
                         <div>
-                          <span className="text-sm text-gray-500 block">Email:</span>
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 mr-2" />
-                            <a 
-                              href={`mailto:${tripPlan.customerEmail}`}
-                              className="text-blue-600 hover:underline"
-                            >
-                              {tripPlan.customerEmail}
-                            </a>
-                          </div>
+                          <h3 className="font-medium text-gray-700 flex items-center mb-1">
+                            <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
+                            Email Address
+                          </h3>
+                          <p className="text-lg break-all">{tripPlan.customerEmail}</p>
                         </div>
                         
                         <div className="pt-4">
-                          <Button 
+                          <Button
                             variant="outline"
                             onClick={() => window.location.href = `mailto:${tripPlan.customerEmail}?subject=Your Trip to ${tripPlan.destination}`}
+                            className="flex items-center"
                           >
                             <Mail className="mr-2 h-4 w-4" />
                             Contact Customer
@@ -335,20 +359,25 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
                   </TabsContent>
                   
                   <TabsContent value="notes">
-                    <div className="bg-gray-50 p-6 rounded-md">
-                      <h3 className="font-medium text-gray-700 mb-4">Admin Notes</h3>
-                      <Textarea
-                        placeholder="Add notes about this trip request..."
-                        className="min-h-32"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                      />
-                      <Button 
-                        className="mt-4"
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                          Internal Notes
+                        </label>
+                        <Textarea
+                          id="notes"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Add notes about this trip plan..."
+                          className="min-h-[200px]"
+                        />
+                      </div>
+                      
+                      <Button
                         onClick={updateTripPlan}
                         disabled={isSaving}
                       >
-                        {isSaving ? 'Saving...' : 'Save Notes'}
+                        {isSaving ? 'Saving Notes...' : 'Save Notes'}
                       </Button>
                     </div>
                   </TabsContent>
@@ -357,105 +386,48 @@ export default function TripPlanDetailPage({ params }: { params: { id: string } 
             </Card>
           </div>
           
-          <div>
+          <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Status Management</CardTitle>
-                <CardDescription>
-                  Update and track the progress of this trip plan
-                </CardDescription>
+                <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium">Current Status</label>
-                    <div className="mt-1">
-                      {getStatusBadge(tripPlan.status)}
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <label className="text-sm font-medium">Update Status</label>
-                    <Select 
-                      value={status} 
-                      onValueChange={setStatus}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PENDING">Pending</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                        <SelectItem value="COMPLETED">Completed</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
+              <CardContent className="space-y-4">
                 <Button 
-                  className="w-full"
-                  onClick={updateTripPlan}
-                  disabled={isSaving || status === tripPlan.status}
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={() => window.location.href = `mailto:${tripPlan.customerEmail}?subject=Your Trip to ${tripPlan.destination}`}
                 >
-                  {isSaving ? 'Updating...' : 'Update Status'}
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email Customer
                 </Button>
-              </CardFooter>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    const updatedStatus = status === 'PENDING' ? 'IN_PROGRESS' : status === 'IN_PROGRESS' ? 'COMPLETED' : 'PENDING';
+                    setStatus(updatedStatus);
+                  }}
+                >
+                  <span className="mr-2 h-4 w-4">📋</span>
+                  Update Status
+                </Button>
+              </CardContent>
             </Card>
             
-            <Card className="mt-6">
+            <Card>
               <CardHeader>
-                <CardTitle>Actions</CardTitle>
+                <CardTitle>Support Resources</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => window.location.href = `mailto:${tripPlan.customerEmail}?subject=Your Trip to ${tripPlan.destination}`}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Email Customer
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this trip plan? This action cannot be undone.')) {
-                        fetch(`/api/admin/trip-plans/${id}`, {
-                          method: 'DELETE',
-                        }).then(response => {
-                          if (response.ok) {
-                            router.push('/admin/trip-plans');
-                          } else {
-                            alert('Failed to delete trip plan');
-                          }
-                        });
-                      }
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="mr-2 h-4 w-4"
-                    >
-                      <path d="M3 6h18"></path>
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                    </svg>
-                    Delete Trip Plan
-                  </Button>
+              <CardContent className="space-y-3">
+                <div className="p-3 bg-blue-50 rounded-md">
+                  <h3 className="font-medium text-blue-700">Destination Guide</h3>
+                  <p className="text-sm text-blue-600">Access travel guides for {tripPlan.destination}</p>
+                </div>
+                
+                <div className="p-3 bg-green-50 rounded-md">
+                  <h3 className="font-medium text-green-700">Customer Support</h3>
+                  <p className="text-sm text-green-600">Access FAQs and support templates</p>
                 </div>
               </CardContent>
             </Card>

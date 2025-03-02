@@ -147,13 +147,39 @@ export default function TripPlansPage() {
   
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Trip Plans</h1>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold">Trip Plans</h1>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => router.refresh()}
+              className="flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 16h5v5" />
+              </svg>
+              Refresh
+            </Button>
+          </div>
         </div>
         
-        <Card className="mb-6">
-          <CardHeader>
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle>Trip Plans Management</CardTitle>
             <CardDescription>
               View and manage customer trip planning requests.
@@ -191,113 +217,116 @@ export default function TripPlansPage() {
         </Card>
         
         {loading ? (
-          <div className="text-center py-8">Loading trip plans...</div>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
+          <div className="bg-red-50 text-red-600 p-4 rounded-md text-center">
+            {error}
+          </div>
         ) : (
-          <div className="bg-white rounded-md shadow">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <div className="flex items-center">
-                      <span>Customer</span>
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead>
-                    <div className="flex items-center">
-                      <span>Destination</span>
-                      <MapPin className="ml-2 h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead>
-                    <div className="flex items-center">
-                      <span>Dates</span>
-                      <Calendar className="ml-2 h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead>
-                    <div className="flex items-center">
-                      <span>Travellers</span>
-                      <User className="ml-2 h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTripPlans.length === 0 ? (
+          <div className="bg-white rounded-md shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">
-                      No trip plans found
-                    </TableCell>
+                    <TableHead className="w-[200px]">
+                      <div className="flex items-center">
+                        <span>Customer</span>
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[150px]">
+                      <div className="flex items-center">
+                        <span>Destination</span>
+                        <MapPin className="ml-2 h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[150px]">
+                      <div className="flex items-center">
+                        <span>Dates</span>
+                        <Calendar className="ml-2 h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[100px]">
+                      <div className="flex items-center">
+                        <span>Travelers</span>
+                        <User className="ml-2 h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[120px]">Status</TableHead>
+                    <TableHead className="w-[120px]">Created</TableHead>
+                    <TableHead className="w-[140px]">Actions</TableHead>
                   </TableRow>
-                ) : (
-                  filteredTripPlans.map((plan) => (
-                    <TableRow key={plan.id}>
-                      <TableCell>
-                        <div className="font-medium">{plan.customerName}</div>
-                        <div className="text-sm text-gray-500 flex items-center">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {plan.customerEmail}
-                        </div>
-                      </TableCell>
-                      <TableCell>{plan.destination}</TableCell>
-                      <TableCell>
-                        <div>{formatDate(plan.departureDate)}</div>
-                        <div className="text-sm text-gray-500">
-                          to {formatDate(plan.returnDate)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>{plan.adults} adults</div>
-                        {(plan.children > 0 || plan.infants > 0) && (
-                          <div className="text-sm text-gray-500">
-                            {plan.children > 0 && `${plan.children} children`}
-                            {plan.children > 0 && plan.infants > 0 && ', '}
-                            {plan.infants > 0 && `${plan.infants} infants`}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(plan.status)}
-                      </TableCell>
-                      <TableCell>{formatDate(plan.createdAt)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => router.push(`/admin/trip-plans/${plan.id}`)}
-                          >
-                            View
-                          </Button>
-                          <Select
-                            value={plan.status}
-                            onValueChange={(value) => 
-                              updateTripPlanStatus(plan.id, value)
-                            }
-                          >
-                            <SelectTrigger className="h-8 w-[110px]">
-                              <SelectValue placeholder="Change Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="PENDING">Pending</SelectItem>
-                              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                              <SelectItem value="COMPLETED">Completed</SelectItem>
-                              <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredTripPlans.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                        No trip plans found
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredTripPlans.map((plan) => (
+                      <TableRow key={plan.id}>
+                        <TableCell>
+                          <div className="font-medium truncate max-w-[180px]">{plan.customerName}</div>
+                          <div className="text-sm text-gray-500 flex items-center truncate max-w-[180px]">
+                            <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">{plan.customerEmail}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="truncate max-w-[120px]">{plan.destination}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">{formatDate(plan.departureDate)}</div>
+                          <div className="text-sm text-gray-500">{formatDate(plan.returnDate)}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span>{plan.adults} Adult{plan.adults !== 1 ? 's' : ''}</span>
+                            {(plan.children > 0 || plan.infants > 0) && (
+                              <span className="text-xs text-gray-500">
+                                {plan.children > 0 ? `${plan.children} Child${plan.children !== 1 ? 'ren' : ''}` : ''}
+                                {plan.children > 0 && plan.infants > 0 ? ', ' : ''}
+                                {plan.infants > 0 ? `${plan.infants} Infant${plan.infants !== 1 ? 's' : ''}` : ''}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(plan.status)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{formatDate(plan.createdAt)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => router.push(`/admin/trip-plans/${plan.id}`)}
+                              className="h-8 px-2 text-xs whitespace-nowrap"
+                            >
+                              View Details
+                            </Button>
+                            <Select
+                              value={plan.status}
+                              onValueChange={(status) => updateTripPlanStatus(plan.id, status)}
+                            >
+                              <SelectTrigger className="h-8 w-24 text-xs">
+                                <SelectValue placeholder="Status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="PENDING">Pending</SelectItem>
+                                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                <SelectItem value="COMPLETED">Completed</SelectItem>
+                                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>
