@@ -2,6 +2,7 @@
 
 import { Calendar, Users, Globe2, Plane, Hotel, MapPin } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type TripType = 'flight' | 'hotel' | 'both';
 type Step = 1 | 2 | 3;
@@ -17,6 +18,11 @@ export default function PlanTripPage() {
     children: 0,
     infants: 0
   });
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
 
   // Progress bar width based on current step
   const progressWidth = currentStep === 1 ? 'w-1/3' : 
@@ -301,6 +307,41 @@ export default function PlanTripPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Contact Information */}
+                <div className="mt-4 pt-4 border-t-2 border-gray-100">
+                  <h3 className="font-medium text-gray-900 mb-3">Contact Information</h3>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors"
+                        placeholder="Your full name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors"
+                        placeholder="Your email address"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-between pt-4">
@@ -311,18 +352,55 @@ export default function PlanTripPage() {
                   Back
                 </button>
                 <button
-                  onClick={() => {
-                    // Handle form submission
-                    console.log({
-                      destination,
-                      tripType,
-                      dates,
-                      travelers
-                    });
+                  onClick={async () => {
+                    try {
+                      setIsSubmitting(true);
+                      
+                      // Create trip plan object
+                      const tripPlanData = {
+                        destination,
+                        tripType,
+                        departureDate: dates.departure,
+                        returnDate: dates.return,
+                        adults: travelers.adults,
+                        children: travelers.children,
+                        infants: travelers.infants,
+                        customerName: name,
+                        customerEmail: email,
+                        // status is now handled by the enum default in the schema
+                      };
+                      
+                      // Send to backend API
+                      const response = await fetch('/api/trip-plans', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(tripPlanData),
+                      });
+                      
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to submit trip plan');
+                      }
+                      
+                      // Show success state
+                      setSubmitted(true);
+                      
+                      // Redirect to thank you page
+                      router.push('/thank-you?type=trip-planning');
+                      
+                    } catch (error) {
+                      console.error('Error submitting trip plan:', error);
+                      alert(`Sorry, there was a problem: ${error instanceof Error ? error.message : 'Please try again.'}`);
+                    } finally {
+                      setIsSubmitting(false);
+                    }
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-all duration-200"
+                  disabled={isSubmitting || !name || !email}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Plan My Trip
+                  {isSubmitting ? 'Submitting...' : submitted ? 'Submitted!' : 'Plan My Trip'}
                 </button>
               </div>
             </div>

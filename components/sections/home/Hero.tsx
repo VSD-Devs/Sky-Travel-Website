@@ -17,8 +17,34 @@ export default function Hero() {
   const [returnDate, setReturnDate] = useState('');
   const [adults, setAdults] = useState('1');
   const [children, setChildren] = useState('0');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Available destinations that we have built
+  const availableDestinations = [
+    { id: 'europe', name: 'Europe', path: '/destinations/europe' },
+    { id: 'americas', name: 'Americas', path: '/destinations/americas' },
+  ];
+
+  // Filter destinations based on search input
+  const filteredDestinations = destination.trim() !== '' 
+    ? availableDestinations.filter(dest => 
+        dest.name.toLowerCase().includes(destination.toLowerCase())
+      )
+    : [];
 
   const handleSearch = () => {
+    // First check if the destination exactly matches one of our available destinations
+    const exactMatch = availableDestinations.find(
+      dest => dest.name.toLowerCase() === destination.toLowerCase()
+    );
+    
+    if (exactMatch) {
+      // If there's an exact match, go directly to that destination page
+      router.push(exactMatch.path);
+      return;
+    }
+    
+    // Otherwise, use the original search functionality
     const searchParams = new URLSearchParams({
       type: searchType,
       destination,
@@ -29,6 +55,11 @@ export default function Hero() {
       children
     });
     router.push(`/search?${searchParams.toString()}`);
+  };
+
+  const handleDestinationClick = (path: string) => {
+    router.push(path);
+    setShowSuggestions(false);
   };
 
   return (
@@ -95,17 +126,43 @@ export default function Hero() {
 
               {/* Destination and Departure */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1">
+                <div className="space-y-1 relative">
                   <label className="flex items-center text-sm font-medium text-gray-700">
                     <Plane className="w-4 h-4 mr-2" /> Destination
                   </label>
                   <Input
                     type="text"
-                    placeholder="Where to?"
+                    placeholder="Where to? (e.g. Europe, Americas)"
                     className="w-full bg-white border-gray-200 text-gray-900 h-9"
                     value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
+                    onChange={(e) => {
+                      setDestination(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => {
+                      // Delay hiding suggestions to allow for clicks
+                      setTimeout(() => setShowSuggestions(false), 200);
+                    }}
                   />
+                  
+                  {/* Destination Suggestions */}
+                  {showSuggestions && filteredDestinations.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200">
+                      <ul className="max-h-60 overflow-auto">
+                        {filteredDestinations.map(dest => (
+                          <li key={dest.id}>
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors duration-150 flex items-center"
+                              onClick={() => handleDestinationClick(dest.path)}
+                            >
+                              <span>{dest.name}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-1">

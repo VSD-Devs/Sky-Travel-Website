@@ -1,279 +1,371 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Home, Users, Briefcase, LogOut, Menu, X, Phone, Mail } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import AdminLayout from '@/components/admin/AdminLayout';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { 
+  Package, 
+  Mail,
+  Map, 
+  Plus, 
+  Calendar,
+  MapPin,
+  User,
+  PlaneTakeoff
+} from 'lucide-react';
+import { formatDate } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
-// Define types for our data
-interface DashboardStats {
+type DashboardStats = {
   totalEnquiries: number;
   newEnquiries: number;
   totalHolidays: number;
-}
+  totalTripPlans: number;
+  pendingTripPlans: number;
+};
 
-interface Enquiry {
+type Enquiry = {
   id: string;
-  firstName: string;
-  lastName: string;
+  customerName: string;
   email: string;
-  phone?: string;
-  message: string;
-  status: 'NEW' | 'IN_PROGRESS' | 'RESPONDED' | 'CLOSED';
-  createdAt: string;
-}
+  subject: string;
+  status: string;
+  date: Date;
+};
+
+type TripPlan = {
+  id: string;
+  destination: string;
+  customerName: string;
+  customerEmail: string;
+  departureDate: Date;
+  status: string;
+  createdAt: Date;
+};
 
 export default function AdminDashboard() {
-  const { data: session, status } = useSession();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     totalEnquiries: 0,
     newEnquiries: 0,
     totalHolidays: 0,
+    totalTripPlans: 0,
+    pendingTripPlans: 0
   });
   const [recentEnquiries, setRecentEnquiries] = useState<Enquiry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [recentTripPlans, setRecentTripPlans] = useState<TripPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
-    // Redirect if not authenticated
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    }
-
-    // Fetch dashboard stats
-    const fetchStats = async () => {
+    const fetchDashboardData = async () => {
       try {
-        setIsLoading(true);
-        const response = await fetch('/api/admin/stats');
-        if (!response.ok) throw new Error('Failed to fetch stats');
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        // Fallback to dummy data if API fails
+        setLoading(true);
+        
+        // Fetch stats
+        const statsResponse = await fetch('/api/admin/stats');
+        const statsData = await statsResponse.json();
+        
+        // Fetch trip plan stats
+        const tripPlanStatsResponse = await fetch('/api/admin/trip-plans/stats');
+        const tripPlanStatsData = await tripPlanStatsResponse.json();
+        
+        // Fetch recent enquiries
+        const enquiriesResponse = await fetch('/api/admin/enquiries/recent');
+        const enquiriesData = await enquiriesResponse.json();
+        
+        // Fetch recent trip plans
+        const tripPlansResponse = await fetch('/api/admin/trip-plans/recent');
+        const tripPlansData = await tripPlansResponse.json();
+        
         setStats({
-          totalEnquiries: 0,
-          newEnquiries: 0,
-          totalHolidays: 0,
+          ...statsData,
+          totalTripPlans: tripPlanStatsData.totalTripPlans || 0,
+          pendingTripPlans: tripPlanStatsData.pendingTripPlans || 0
         });
-      }
-    };
-
-    // Fetch recent enquiries
-    const fetchRecentEnquiries = async () => {
-      try {
-        const response = await fetch('/api/admin/enquiries/recent');
-        if (!response.ok) throw new Error('Failed to fetch recent enquiries');
-        const data = await response.json();
-        setRecentEnquiries(data);
+        setRecentEnquiries(enquiriesData || []);
+        setRecentTripPlans(tripPlansData || []);
       } catch (error) {
-        console.error('Error fetching recent enquiries:', error);
-        setRecentEnquiries([]);
+        console.error('Error fetching dashboard data:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-
-    if (status === 'authenticated') {
-      Promise.all([fetchStats(), fetchRecentEnquiries()]);
-    }
-  }, [status, router]);
-
-  if (status === 'loading' || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Get status badge color
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
+    
+    fetchDashboardData();
+  }, []);
+  
+  const getStatusBadge = (status: string) => {
+    switch (status.toUpperCase()) {
       case 'NEW':
-        return 'bg-blue-100 text-blue-800';
+      case 'PENDING':
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case 'IN_PROGRESS':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'RESPONDED':
-        return 'bg-green-100 text-green-800';
-      case 'CLOSED':
-        return 'bg-gray-100 text-gray-800';
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800">In Progress</Badge>;
+      case 'RESOLVED':
+      case 'COMPLETED':
+        return <Badge variant="outline" className="bg-green-100 text-green-800">Completed</Badge>;
+      case 'CANCELLED':
+        return <Badge variant="outline" className="bg-red-100 text-red-800">Cancelled</Badge>;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
-
+  
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Mobile sidebar toggle */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white shadow-sm p-4 flex items-center justify-between">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
-        >
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        <div className="font-semibold text-lg">Sky Limit Travels</div>
-      </div>
-
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-10 w-64 bg-white shadow-lg transform ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 transition-transform duration-300 ease-in-out`}
-      >
-        <div className="p-6">
-          <div className="text-xl font-bold text-gray-800">Sky Limit Travels</div>
-          <div className="text-sm text-gray-600">Admin Panel</div>
+    <AdminLayout>
+      <div className="container mx-auto py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.push('/admin/holidays/new')}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Holiday
+            </Button>
+          </div>
         </div>
-
-        <nav className="mt-6">
-          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Main
-          </div>
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-100"
-          >
-            <Home className="w-5 h-5 mr-3" />
-            Dashboard
-          </Link>
-          <Link
-            href="/admin/enquiries"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            <Users className="w-5 h-5 mr-3" />
-            Enquiries
-          </Link>
-          <Link
-            href="/admin/holidays"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
-          >
-            <Briefcase className="w-5 h-5 mr-3" />
-            Holidays
-          </Link>
-
-          <div className="px-4 py-2 mt-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Account
-          </div>
-          <button
-            onClick={() => {
-              // Sign out logic will be implemented later
-              router.push('/admin/login');
-            }}
-            className="flex items-center w-full px-6 py-3 text-gray-700 hover:bg-gray-100 text-left"
-          >
-            <LogOut className="w-5 h-5 mr-3" />
-            Sign Out
-          </button>
-        </nav>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-64 pt-16 lg:pt-0">
-        <div className="p-6">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {session?.user?.name || 'Admin'}</p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="text-gray-500 text-sm font-medium">Total Enquiries</div>
-              <div className="mt-2 text-3xl font-bold text-gray-900">{stats.totalEnquiries}</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="text-gray-500 text-sm font-medium">New Enquiries</div>
-              <div className="mt-2 text-3xl font-bold text-blue-600">{stats.newEnquiries}</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="text-gray-500 text-sm font-medium">Total Holidays</div>
-              <div className="mt-2 text-3xl font-bold text-gray-900">{stats.totalHolidays}</div>
-            </div>
-          </div>
-
-          {/* Quick actions */}
-          <div className="bg-white rounded-lg shadow mb-8">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link
-                href="/admin/enquiries"
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+        
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">
+                Total Enquiries
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <Mail className="h-5 w-5 text-blue-500 mr-2" />
+                <span className="text-2xl font-bold">
+                  {loading ? '...' : stats.totalEnquiries}
+                </span>
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-blue-500"
+                onClick={() => router.push('/admin/enquiries')}
               >
-                View Enquiries
-              </Link>
-              <Link
-                href="/admin/holidays/new"
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                View all enquiries
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">
+                New Enquiries
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <Mail className="h-5 w-5 text-yellow-500 mr-2" />
+                <span className="text-2xl font-bold">
+                  {loading ? '...' : stats.newEnquiries}
+                </span>
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-blue-500"
+                onClick={() => router.push('/admin/enquiries?status=new')}
               >
-                Add New Holiday
-              </Link>
-            </div>
-          </div>
-
-          {/* Recent enquiries */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Recent Enquiries</h2>
-            </div>
-            <div className="p-6">
-              {recentEnquiries.length > 0 ? (
-                <div className="divide-y divide-gray-200">
+                View new enquiries
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">
+                Total Holidays
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <Package className="h-5 w-5 text-green-500 mr-2" />
+                <span className="text-2xl font-bold">
+                  {loading ? '...' : stats.totalHolidays}
+                </span>
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-blue-500"
+                onClick={() => router.push('/admin/holidays')}
+              >
+                View all holidays
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">
+                Trip Plans
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <PlaneTakeoff className="h-5 w-5 text-purple-500 mr-2" />
+                <span className="text-2xl font-bold">
+                  {loading ? '...' : stats.totalTripPlans}
+                </span>
+                <span className="text-sm ml-2 text-yellow-600">
+                  ({loading ? '...' : stats.pendingTripPlans} pending)
+                </span>
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-blue-500"
+                onClick={() => router.push('/admin/trip-plans')}
+              >
+                View trip plans
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+        
+        {/* Quick Actions */}
+        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Button 
+            variant="outline" 
+            className="h-auto py-4 flex flex-col items-center justify-center"
+            onClick={() => router.push('/admin/enquiries')}
+          >
+            <Mail className="h-8 w-8 mb-2" />
+            <span>View Enquiries</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="h-auto py-4 flex flex-col items-center justify-center"
+            onClick={() => router.push('/admin/holidays')}
+          >
+            <Package className="h-8 w-8 mb-2" />
+            <span>Manage Holidays</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="h-auto py-4 flex flex-col items-center justify-center"
+            onClick={() => router.push('/admin/trip-plans')}
+          >
+            <PlaneTakeoff className="h-8 w-8 mb-2" />
+            <span>Manage Trip Plans</span>
+          </Button>
+        </div>
+        
+        {/* Recent Activities */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Recent Enquiries */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Recent Enquiries</CardTitle>
+              <CardDescription>Latest customer enquiries</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-4">Loading...</div>
+              ) : recentEnquiries.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">No recent enquiries</div>
+              ) : (
+                <div className="space-y-4">
                   {recentEnquiries.map((enquiry) => (
-                    <div key={enquiry.id} className="py-4">
-                      <div className="flex items-start justify-between">
+                    <div key={enquiry.id} className="border-b pb-4 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-sm font-medium text-gray-900">
-                            {enquiry.firstName} {enquiry.lastName}
-                          </h3>
-                          <div className="mt-1 flex items-center space-x-2 text-sm text-gray-500">
-                            <div className="flex items-center">
-                              <Mail className="w-4 h-4 mr-1" />
-                              {enquiry.email}
-                            </div>
-                            {enquiry.phone && (
-                              <div className="flex items-center">
-                                <Phone className="w-4 h-4 mr-1" />
-                                {enquiry.phone}
-                              </div>
-                            )}
-                          </div>
-                          <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-                            {enquiry.message}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-400">
-                            {formatDistanceToNow(new Date(enquiry.createdAt), { addSuffix: true })}
-                          </p>
+                          <div className="font-medium">{enquiry.customerName}</div>
+                          <div className="text-sm text-gray-500 mt-1">{enquiry.subject}</div>
                         </div>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(
-                            enquiry.status
-                          )}`}
-                        >
-                          {enquiry.status.replace('_', ' ')}
-                        </span>
+                        <div>{getStatusBadge(enquiry.status)}</div>
+                      </div>
+                      <div className="flex items-center mt-2 text-sm text-gray-500">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        <span>{formatDate(enquiry.date)}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-gray-600 text-center py-8">
-                  No recent enquiries found.
-                </p>
               )}
-            </div>
-          </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => router.push('/admin/enquiries')}
+              >
+                View All Enquiries
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          {/* Recent Trip Plans */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Recent Trip Plans</CardTitle>
+              <CardDescription>Latest trip planning requests</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-4">Loading...</div>
+              ) : recentTripPlans.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">No recent trip plans</div>
+              ) : (
+                <div className="space-y-4">
+                  {recentTripPlans.map((plan) => (
+                    <div key={plan.id} className="border-b pb-4 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium">{plan.customerName}</div>
+                          <div className="flex items-center text-sm text-gray-500 mt-1">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {plan.destination}
+                          </div>
+                        </div>
+                        <div>{getStatusBadge(plan.status)}</div>
+                      </div>
+                      <div className="flex items-center mt-2 text-sm text-gray-500">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        <span>Travel date: {formatDate(plan.departureDate)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => router.push('/admin/trip-plans')}
+              >
+                View All Trip Plans
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 } 
