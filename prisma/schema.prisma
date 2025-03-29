@@ -16,15 +16,19 @@ datasource db {
 
 // Model for storing contact form enquiries
 model Enquiry {
-  id        String   @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String
-  phone     String?
-  message   String
-  status    EnquiryStatus @default(NEW)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  message        String
+  type           EnquiryType   @default(GENERAL)
+  flightDetails  String?       // JSON string containing flight details
+  holidayDetails String?       // JSON string containing holiday details
+  packageDetails String?       // JSON string containing package details
+  status         EnquiryStatus @default(NEW)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 // Status of enquiries
@@ -33,6 +37,14 @@ enum EnquiryStatus {
   IN_PROGRESS
   RESPONDED
   CLOSED
+}
+
+// Type of enquiries
+enum EnquiryType {
+  GENERAL
+  FLIGHT
+  HOLIDAY
+  PACKAGE
 }
 
 // Model for admin users

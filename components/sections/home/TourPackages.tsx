@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const tourPackages = [
   {
@@ -70,6 +72,7 @@ const tourPackages = [
 
 export default function TourPackages() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
@@ -159,8 +162,24 @@ export default function TourPackages() {
                         ))}
                       </div>
 
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full py-6 transition-all duration-300">
-                        Book This Package
+                      <Button 
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-full py-6 transition-all duration-300"
+                        onClick={() => {
+                          const packageNameParts = pack.name.split(' ');
+                          const destination = packageNameParts[0];
+                          
+                          const queryParams = new URLSearchParams({
+                            packageId: pack.id.toString(),
+                            title: pack.name,
+                            price: pack.price.toString(),
+                            duration: pack.duration,
+                            destination: destination
+                          });
+                          
+                          router.push(`/enquire?${queryParams.toString()}`);
+                        }}
+                      >
+                        Enquire About This Package
                       </Button>
                     </div>
                   </CardContent>

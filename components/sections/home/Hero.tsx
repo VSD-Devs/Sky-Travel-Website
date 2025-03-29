@@ -8,58 +8,174 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+// Airport interface to ensure type safety
+interface Airport {
+  id: string;
+  iataCode: string;
+  name: string;
+  city: string;
+  country: string;
+}
+
 export default function Hero() {
   const router = useRouter();
   const [searchType, setSearchType] = useState('flight');
   const [destination, setDestination] = useState('');
-  const [departureAirport, setDepartureAirport] = useState('');
+  const [departureAirport, setDepartureAirport] = useState('LHR');
+  const [departureAirportDisplay, setDepartureAirportDisplay] = useState('London Heathrow (LHR)');
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [adults, setAdults] = useState('1');
   const [children, setChildren] = useState('0');
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const [showDepartureAirportSuggestions, setShowDepartureAirportSuggestions] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Available destinations that we have built
-  const availableDestinations = [
+  // Available regions/continents that we have built
+  const availableRegions = [
     { id: 'europe', name: 'Europe', path: '/destinations/europe' },
     { id: 'americas', name: 'Americas', path: '/destinations/americas' },
   ];
 
+  // Common airports with more details
+  const airports: Airport[] = [
+    { id: 'lhr', iataCode: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'United Kingdom' },
+    { id: 'lgw', iataCode: 'LGW', name: 'Gatwick Airport', city: 'London', country: 'United Kingdom' },
+    { id: 'stn', iataCode: 'STN', name: 'Stansted Airport', city: 'London', country: 'United Kingdom' },
+    { id: 'cdg', iataCode: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France' },
+    { id: 'ory', iataCode: 'ORY', name: 'Orly Airport', city: 'Paris', country: 'France' },
+    { id: 'jfk', iataCode: 'JFK', name: 'John F. Kennedy Airport', city: 'New York', country: 'USA' },
+    { id: 'lga', iataCode: 'LGA', name: 'LaGuardia Airport', city: 'New York', country: 'USA' },
+    { id: 'ams', iataCode: 'AMS', name: 'Schiphol Airport', city: 'Amsterdam', country: 'Netherlands' },
+    { id: 'fco', iataCode: 'FCO', name: 'Fiumicino Airport', city: 'Rome', country: 'Italy' },
+    { id: 'mad', iataCode: 'MAD', name: 'Barajas Airport', city: 'Madrid', country: 'Spain' },
+    { id: 'dxb', iataCode: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'UAE' },
+    { id: 'syd', iataCode: 'SYD', name: 'Kingsford Smith Airport', city: 'Sydney', country: 'Australia' },
+    { id: 'hnd', iataCode: 'HND', name: 'Haneda Airport', city: 'Tokyo', country: 'Japan' },
+    { id: 'sin', iataCode: 'SIN', name: 'Changi Airport', city: 'Singapore', country: 'Singapore' },
+  ];
+
   // Filter destinations based on search input
   const filteredDestinations = destination.trim() !== '' 
-    ? availableDestinations.filter(dest => 
-        dest.name.toLowerCase().includes(destination.toLowerCase())
-      )
+    ? availableRegions
+        .filter(region => 
+          region.name.toLowerCase().includes(destination.toLowerCase())
+        )
+        .concat(
+          airports
+            .filter(airport => 
+              airport.name.toLowerCase().includes(destination.toLowerCase()) ||
+              airport.city.toLowerCase().includes(destination.toLowerCase()) ||
+              airport.iataCode.toLowerCase().includes(destination.toLowerCase())
+            )
+            .map(airport => ({
+              id: airport.id,
+              name: `${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`,
+              iataCode: airport.iataCode,
+              path: `/search?destination=${airport.iataCode}&departureAirport=${departureAirport}&type=${searchType}`
+            }))
+        )
     : [];
 
-  const handleSearch = () => {
-    // First check if the destination exactly matches one of our available destinations
-    const exactMatch = availableDestinations.find(
-      dest => dest.name.toLowerCase() === destination.toLowerCase()
-    );
+  // Filter departure airports based on search input
+  const filteredDepartureAirports = departureAirportDisplay.trim() !== '' 
+    ? airports.filter(airport => 
+        airport.name.toLowerCase().includes(departureAirportDisplay.toLowerCase()) ||
+        airport.city.toLowerCase().includes(departureAirportDisplay.toLowerCase()) ||
+        airport.iataCode.toLowerCase().includes(departureAirportDisplay.toLowerCase())
+      )
+    : airports;
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
     
-    if (exactMatch) {
-      // If there's an exact match, go directly to that destination page
-      router.push(exactMatch.path);
+    if (!destination) {
+      errors.destination = 'Please enter a destination';
+    }
+    
+    if (!departureAirport) {
+      errors.departureAirport = 'Please enter a departure airport';
+    }
+    
+    if (!departureDate) {
+      errors.departureDate = 'Please select a departure date';
+    }
+    
+    if (searchType === 'package' && !returnDate) {
+      errors.returnDate = 'Please select a return date for packages';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSearch = () => {
+    if (!validateForm()) {
       return;
     }
     
-    // Otherwise, use the original search functionality
+    // Check if the destination exactly matches one of our available region destinations
+    const exactRegionMatch = availableRegions.find(
+      region => region.name.toLowerCase() === destination.toLowerCase()
+    );
+    
+    if (exactRegionMatch) {
+      // If there's an exact match with a region, go directly to that destination page
+      router.push(exactRegionMatch.path);
+      return;
+    }
+    
+    // Check if the destination matches an airport
+    const airportMatch = airports.find(
+      airport => 
+        airport.name.toLowerCase().includes(destination.toLowerCase()) ||
+        airport.city.toLowerCase().includes(destination.toLowerCase()) ||
+        airport.iataCode.toLowerCase() === destination.toLowerCase()
+    );
+
+    // Build search parameters for the flight search
     const searchParams = new URLSearchParams({
       type: searchType,
-      destination,
-      ...(searchType === 'flight' && { departureAirport }),
+      departureAirport,
+      // If we matched an airport, use its code, otherwise just use the destination as entered
+      destination: airportMatch ? airportMatch.iataCode : destination,
       departureDate,
-      returnDate,
+      ...(returnDate && { returnDate }),
       adults,
       children
     });
+    
     router.push(`/search?${searchParams.toString()}`);
   };
 
-  const handleDestinationClick = (path: string) => {
-    router.push(path);
-    setShowSuggestions(false);
+  // Handle clicking on a destination suggestion
+  const handleDestinationClick = (item: any) => {
+    if ('path' in item) {
+      // It's a region destination
+      router.push(item.path);
+    } else {
+      // It's an airport
+      setDestination(item.name);
+      setShowDestinationSuggestions(false);
+    }
+  };
+
+  // Handle clicking on a departure airport suggestion
+  const handleDepartureAirportClick = (airport: Airport) => {
+    setDepartureAirport(airport.iataCode);
+    setDepartureAirportDisplay(`${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`);
+    setShowDepartureAirportSuggestions(false);
+    
+    if (formErrors.departureAirport) {
+      setFormErrors({ ...formErrors, departureAirport: '' });
+    }
+  };
+
+  // Get tomorrow's date in YYYY-MM-DD format for min date attribute
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
   };
 
   return (
@@ -126,37 +242,50 @@ export default function Hero() {
 
               {/* Destination and Departure */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* From - Departure Airport */}
                 <div className="space-y-1 relative">
                   <label className="flex items-center text-sm font-medium text-gray-700">
-                    <Plane className="w-4 h-4 mr-2" /> Destination
+                    <Plane className="w-4 h-4 mr-2" /> From
                   </label>
                   <Input
                     type="text"
-                    placeholder="Where to? (e.g. Europe, Americas)"
-                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
-                    value={destination}
+                    placeholder="Where from? (e.g. Heathrow, LHR)"
+                    className={`w-full bg-white border-gray-200 text-gray-900 h-9 ${
+                      formErrors.departureAirport ? 'border-red-500' : ''
+                    }`}
+                    value={departureAirportDisplay}
                     onChange={(e) => {
-                      setDestination(e.target.value);
-                      setShowSuggestions(true);
+                      setDepartureAirportDisplay(e.target.value);
+                      setShowDepartureAirportSuggestions(true);
+                      if (formErrors.departureAirport) {
+                        setFormErrors({ ...formErrors, departureAirport: '' });
+                      }
                     }}
-                    onFocus={() => setShowSuggestions(true)}
+                    onFocus={() => setShowDepartureAirportSuggestions(true)}
                     onBlur={() => {
                       // Delay hiding suggestions to allow for clicks
-                      setTimeout(() => setShowSuggestions(false), 200);
+                      setTimeout(() => setShowDepartureAirportSuggestions(false), 200);
                     }}
                   />
+                  {formErrors.departureAirport && (
+                    <p className="text-xs text-red-500 mt-1">{formErrors.departureAirport}</p>
+                  )}
                   
-                  {/* Destination Suggestions */}
-                  {showSuggestions && filteredDestinations.length > 0 && (
+                  {/* Airport Suggestions Dropdown */}
+                  {showDepartureAirportSuggestions && filteredDepartureAirports.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200">
                       <ul className="max-h-60 overflow-auto">
-                        {filteredDestinations.map(dest => (
-                          <li key={dest.id}>
+                        {filteredDepartureAirports.slice(0, 6).map((airport) => (
+                          <li key={airport.id}>
                             <button
                               className="w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors duration-150 flex items-center"
-                              onClick={() => handleDestinationClick(dest.path)}
+                              onClick={() => handleDepartureAirportClick(airport)}
                             >
-                              <span>{dest.name}</span>
+                              <Plane className="w-3 h-3 mr-2 text-blue-500" />
+                              <div>
+                                <div className="font-medium">{airport.city} - {airport.name}</div>
+                                <div className="text-xs text-gray-500">{airport.iataCode} • {airport.country}</div>
+                              </div>
                             </button>
                           </li>
                         ))}
@@ -165,17 +294,62 @@ export default function Hero() {
                   )}
                 </div>
                 
-                <div className="space-y-1">
+                {/* To - Destination */}
+                <div className="space-y-1 relative">
                   <label className="flex items-center text-sm font-medium text-gray-700">
-                    <Plane className="w-4 h-4 mr-2" /> From
+                    <Plane className="w-4 h-4 mr-2" /> To
                   </label>
                   <Input
                     type="text"
-                    placeholder="Departure airport"
-                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
-                    value={departureAirport}
-                    onChange={(e) => setDepartureAirport(e.target.value)}
+                    placeholder="Where to? (e.g. Paris, New York, CDG)"
+                    className={`w-full bg-white border-gray-200 text-gray-900 h-9 ${
+                      formErrors.destination ? 'border-red-500' : ''
+                    }`}
+                    value={destination}
+                    onChange={(e) => {
+                      setDestination(e.target.value);
+                      setShowDestinationSuggestions(true);
+                      if (formErrors.destination) {
+                        setFormErrors({ ...formErrors, destination: '' });
+                      }
+                    }}
+                    onFocus={() => setShowDestinationSuggestions(true)}
+                    onBlur={() => {
+                      // Delay hiding suggestions to allow for clicks
+                      setTimeout(() => setShowDestinationSuggestions(false), 200);
+                    }}
                   />
+                  {formErrors.destination && (
+                    <p className="text-xs text-red-500 mt-1">{formErrors.destination}</p>
+                  )}
+                  
+                  {/* Destination Suggestions */}
+                  {showDestinationSuggestions && filteredDestinations.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200">
+                      <ul className="max-h-60 overflow-auto">
+                        {filteredDestinations.map((dest) => (
+                          <li key={dest.id}>
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors duration-150 flex items-center"
+                              onClick={() => handleDestinationClick(dest)}
+                            >
+                              {'iataCode' in dest ? (
+                                <>
+                                  <Plane className="w-3 h-3 mr-2 text-blue-500" />
+                                  <span>{dest.name}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="bg-blue-50 text-blue-800 rounded-sm text-xs px-1.5 py-0.5 mr-2">Region</span>
+                                  <span>{dest.name}</span>
+                                </>
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -187,10 +361,21 @@ export default function Hero() {
                   </label>
                   <Input
                     type="date"
-                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
+                    className={`w-full bg-white border-gray-200 text-gray-900 h-9 ${
+                      formErrors.departureDate ? 'border-red-500' : ''
+                    }`}
                     value={departureDate}
-                    onChange={(e) => setDepartureDate(e.target.value)}
+                    min={getTomorrowDate()}
+                    onChange={(e) => {
+                      setDepartureDate(e.target.value);
+                      if (formErrors.departureDate) {
+                        setFormErrors({ ...formErrors, departureDate: '' });
+                      }
+                    }}
                   />
+                  {formErrors.departureDate && (
+                    <p className="text-xs text-red-500 mt-1">{formErrors.departureDate}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -199,10 +384,21 @@ export default function Hero() {
                   </label>
                   <Input
                     type="date"
-                    className="w-full bg-white border-gray-200 text-gray-900 h-9"
+                    className={`w-full bg-white border-gray-200 text-gray-900 h-9 ${
+                      formErrors.returnDate ? 'border-red-500' : ''
+                    }`}
                     value={returnDate}
-                    onChange={(e) => setReturnDate(e.target.value)}
+                    min={departureDate || getTomorrowDate()}
+                    onChange={(e) => {
+                      setReturnDate(e.target.value);
+                      if (formErrors.returnDate) {
+                        setFormErrors({ ...formErrors, returnDate: '' });
+                      }
+                    }}
                   />
+                  {formErrors.returnDate && (
+                    <p className="text-xs text-red-500 mt-1">{formErrors.returnDate}</p>
+                  )}
                 </div>
               </div>
 

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Calendar, Clock, Users, MapPin, Star, Heart, Share2, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Activity {
   day: number;
@@ -186,6 +187,7 @@ const holidaysData: HolidaysData = {
 };
 
 export default function HolidayDetails({ id }: { id: string }) {
+  const router = useRouter();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showFullItinerary, setShowFullItinerary] = useState(false);
 
@@ -355,8 +357,23 @@ export default function HolidayDetails({ id }: { id: string }) {
                   </div>
                 </div>
 
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6">
-                  Book Now
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
+                  onClick={() => {
+                    const queryParams = new URLSearchParams({
+                      holidayId: id,
+                      destination: holidayData.location,
+                      title: holidayData.name,
+                      price: holidayData.price.toString(),
+                      duration: holidayData.duration,
+                      departureDate: '', // Can be selected by user before enquiry
+                      travelers: '2' // Default or can be selected
+                    });
+                    
+                    router.push(`/enquire?${queryParams.toString()}`);
+                  }}
+                >
+                  Enquire Now
                 </Button>
 
                 <p className="text-sm text-gray-500 text-center">

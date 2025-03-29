@@ -137,9 +137,9 @@ export default function FeaturedDestinations() {
                           <span className="text-sm text-gray-500">Starting from</span>
                           <p className="text-2xl font-bold text-blue-600">£{destination.price}</p>
                         </div>
-                        <Link href={`/holidays/${destination.id}`}>
+                        <Link href={`/enquire?destinationId=${destination.id}&title=${destination.name}&price=${destination.price}&duration=${destination.duration}`}>
                           <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full transition-all duration-300">
-                            Book Now
+                            Enquire Now
                           </Button>
                         </Link>
                       </div>
