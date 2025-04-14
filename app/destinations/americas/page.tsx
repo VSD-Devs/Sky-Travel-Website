@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Users, MapPin } from 'lucide-react';
+import { Clock, Users, MapPin, Star } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'American Destinations | Sky Limit Travels',
@@ -203,71 +203,86 @@ export default function AmericasDestinations() {
         </div>
       </section>
 
-      {/* Featured Holidays Section */}
+      {/* Featured Destinations Section */}
       <section className="py-16 px-4 bg-white">
         <div className="container mx-auto">
           <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6 text-gray-900">Featured American Holidays</h2>
+            <h2 className="text-4xl font-bold mb-6 text-gray-900">Featured Americas Holidays</h2>
             <div className="w-24 h-1 bg-blue-600 mx-auto mb-8"></div>
             <p className="text-lg text-gray-600">
-              Our carefully selected collection of American adventures, designed to highlight the incredible diversity and experiences these continents have to offer.
+              Our handcrafted selection of Americas experiences, designed to showcase the incredible diversity of landscapes, cultures, and adventures across North, Central, and South America.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8">
             {americanDestinations.map((destination) => (
               <Card key={destination.id} className="group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-                    <img
-                      src={destination.image}
-                      alt={destination.name}
-                      className="w-full h-60 object-cover transform group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-1 shadow-lg">
-                      <span className="text-yellow-500">★</span>
-                      <span className="font-semibold">{destination.rating}</span>
+                <div className="relative h-60 overflow-hidden">
+                  <img 
+                    src={destination.image} 
+                    alt={destination.name} 
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex justify-between items-end">
+                      <h3 className="text-xl font-bold text-white">{destination.name}</h3>
+                      <div className="flex items-center bg-blue-600 px-3 py-1 rounded-full text-white text-sm font-semibold">
+                        £{destination.price}
+                      </div>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 text-gray-800">{destination.name}</h3>
-                    <p className="text-gray-600 mb-4 line-clamp-2">{destination.description}</p>
+                </div>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {destination.duration}
+                    </div>
+                    <div className="flex items-center text-yellow-500">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="ml-1 text-sm font-medium text-gray-700">{destination.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 mb-6">
+                    {destination.description}
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-gray-800 text-sm">HIGHLIGHTS</h4>
+                    <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
+                      {destination.highlights.map((highlight, index) => (
+                        <li key={index} className="text-sm text-gray-600 flex items-start">
+                          <span className="text-blue-500 mr-1">✓</span> {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      asChild
+                    >
+                      <Link href="/enquire">Book Now</Link>
+                    </Button>
                     
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span>{destination.duration}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Users className="w-4 h-4" />
-                        <span>{destination.groupSize}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-sm text-gray-500">From</span>
-                        <p className="text-xl font-bold text-blue-600">£{destination.price}</p>
-                      </div>
-                      <Link href={`/holidays/${destination.id}`}>
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all duration-300">
-                          View Details
-                        </Button>
-                      </Link>
-                    </div>
+                    {/* Add View Flights button that links to the detailed page for each destination */}
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 border-blue-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      asChild
+                    >
+                      {destination.id === 'new-york' ? (
+                        <Link href="/destinations/americas/new-york">View Flights</Link>
+                      ) : (
+                        <Link href={`/destinations/americas/${destination.id}`}>Learn More</Link>
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/holidays">
-              <Button className="bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-2 rounded-full">
-                View All American Destinations
-              </Button>
-            </Link>
           </div>
         </div>
       </section>

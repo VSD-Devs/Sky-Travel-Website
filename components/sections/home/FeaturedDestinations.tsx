@@ -2,55 +2,57 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Plane, Globe, Sun, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const destinations = [
   {
     id: 1,
     name: 'Santorini, Greece',
     image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?ixlib=rb-4.0.3',
-    price: '1,299',
     rating: 4.8,
-    description: 'Experience the stunning white architecture and breathtaking sunsets',
-    duration: '7 Days',
-    groupSize: '8-12'
+    description: 'White-washed villages clinging to cliffs overlooking the Aegean Sea',
+    bestSeason: 'April to October',
+    flightTime: '3-4 hours',
+    nearestAirport: 'Santorini International Airport (JTR)'
   },
   {
     id: 2,
     name: 'Bali, Indonesia',
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?ixlib=rb-4.0.3',
-    price: '899',
     rating: 4.7,
-    description: 'Discover tropical beaches and rich cultural heritage',
-    duration: '10 Days',
-    groupSize: '6-10'
+    description: 'Tropical beaches, lush rice terraces and vibrant cultural experiences',
+    bestSeason: 'May to September',
+    flightTime: '16-18 hours',
+    nearestAirport: 'Ngurah Rai International Airport (DPS)'
   },
   {
     id: 3,
     name: 'Maldives',
     image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?ixlib=rb-4.0.3',
-    price: '1,599',
     rating: 4.9,
-    description: 'Luxury overwater villas in crystal clear waters',
-    duration: '8 Days',
-    groupSize: '2-4'
+    description: 'Crystal clear waters, private island resorts and spectacular marine life',
+    bestSeason: 'November to April',
+    flightTime: '10-12 hours',
+    nearestAirport: 'Velana International Airport (MLE)'
   },
   {
     id: 4,
     name: 'Swiss Alps',
     image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?ixlib=rb-4.0.3',
-    price: '2,199',
     rating: 4.8,
-    description: 'Experience the majestic mountains and pristine lakes',
-    duration: '6 Days',
-    groupSize: '4-8'
+    description: 'Spectacular mountain landscapes with pristine lakes and charming villages',
+    bestSeason: 'December to March (skiing), June to September (hiking)',
+    flightTime: '1.5-2 hours',
+    nearestAirport: 'Zurich Airport (ZRH), Geneva Airport (GVA)'
   }
 ];
 
 export default function FeaturedDestinations() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
@@ -71,9 +73,9 @@ export default function FeaturedDestinations() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
             Featured Destinations
           </h2>
-          <div className="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
+          <div className="w-24 h-1 bg-blue-800 mx-auto mb-6"></div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Explore our hand-picked destinations for your next adventure. Each location carefully selected for unforgettable experiences.
+            Discover essential travel information about these incredible destinations you can fly to
           </p>
         </div>
         
@@ -81,7 +83,7 @@ export default function FeaturedDestinations() {
           {/* Left Arrow */}
           <button 
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 bg-white/80 hover:bg-white text-blue-600 p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 bg-white/80 hover:bg-white text-blue-700 p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -89,7 +91,7 @@ export default function FeaturedDestinations() {
           {/* Right Arrow */}
           <button 
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 bg-white/80 hover:bg-white text-blue-600 p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 bg-white/80 hover:bg-white text-blue-700 p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -121,27 +123,32 @@ export default function FeaturedDestinations() {
                       <h3 className="text-2xl font-bold mb-3 text-gray-800">{destination.name}</h3>
                       <p className="text-gray-600 mb-4 line-clamp-2">{destination.description}</p>
                       
-                      <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="space-y-3 mb-6">
                         <div className="flex items-center gap-2 text-gray-600">
-                          <Clock className="w-4 h-4" />
-                          <span>{destination.duration}</span>
+                          <Plane className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <span>Flight time: {destination.flightTime}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
-                          <Users className="w-4 h-4" />
-                          <span>{destination.groupSize} people</span>
+                          <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <span>Airport: {destination.nearestAirport}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Sun className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <span>Best season: {destination.bestSeason}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-sm text-gray-500">Starting from</span>
-                          <p className="text-2xl font-bold text-blue-600">£{destination.price}</p>
-                        </div>
-                        <Link href={`/enquire?destinationId=${destination.id}&title=${destination.name}&price=${destination.price}&duration=${destination.duration}`}>
-                          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full transition-all duration-300">
-                            Enquire Now
-                          </Button>
-                        </Link>
+                      <div className="flex justify-center">
+                        <Button 
+                          className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-lg transition-all duration-300 w-full flex items-center justify-center"
+                          onClick={() => {
+                            const destination_query = destination.name.split(',')[0].toLowerCase();
+                            router.push(`/flights?destination=${destination_query}`);
+                          }}
+                        >
+                          <Plane className="mr-2 h-4 w-4" />
+                          Find Flights
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

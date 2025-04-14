@@ -1,9 +1,8 @@
 'use client';
 
-import { Search, Plane, Users, Calendar, Building2, ArrowRight } from 'lucide-react';
+import { Search, Plane, Users, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -19,10 +18,9 @@ interface Airport {
 
 export default function Hero() {
   const router = useRouter();
-  const [searchType, setSearchType] = useState('flight');
   const [destination, setDestination] = useState('');
   const [departureAirport, setDepartureAirport] = useState('LHR');
-  const [departureAirportDisplay, setDepartureAirportDisplay] = useState('London Heathrow (LHR)');
+  const [departureAirportDisplay, setDepartureAirportDisplay] = useState('London, United Kingdom - Heathrow Airport (LHR)');
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [adults, setAdults] = useState('1');
@@ -72,7 +70,7 @@ export default function Hero() {
               id: airport.id,
               name: `${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`,
               iataCode: airport.iataCode,
-              path: `/search?destination=${airport.iataCode}&departureAirport=${departureAirport}&type=${searchType}`
+              path: `/search?destination=${airport.iataCode}&departureAirport=${departureAirport}&type=flight`
             }))
         )
     : [];
@@ -99,10 +97,6 @@ export default function Hero() {
     
     if (!departureDate) {
       errors.departureDate = 'Please select a departure date';
-    }
-    
-    if (searchType === 'package' && !returnDate) {
-      errors.returnDate = 'Please select a return date for packages';
     }
     
     setFormErrors(errors);
@@ -135,7 +129,7 @@ export default function Hero() {
 
     // Build search parameters for the flight search
     const searchParams = new URLSearchParams({
-      type: searchType,
+      type: 'flight',
       departureAirport,
       // If we matched an airport, use its code, otherwise just use the destination as entered
       destination: airportMatch ? airportMatch.iataCode : destination,
@@ -199,47 +193,17 @@ export default function Hero() {
         <div className="w-full max-w-xl md:max-w-3xl">
           <div className="backdrop-blur-md bg-white/95 rounded-2xl shadow-lg border border-white/20 overflow-hidden">
             {/* Form Header - Now visible on all devices */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-3 md:p-4 text-center">
+            <div className="bg-blue-800 p-3 md:p-4 text-center">
               <h1 className="text-lg md:text-xl font-bold text-white mb-1">
-                Plan Your Next Holiday
+                Find and Book Flights
               </h1>
               <p className="text-sm md:text-base text-blue-100">
-                Explore the world's most beautiful destinations
+                Compare flights to hundreds of destinations worldwide
               </p>
             </div>
 
             {/* Form Content */}
             <div className="p-3 md:p-6 space-y-3">
-              {/* Search Type Toggle */}
-              <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-lg">
-                <button
-                  onClick={() => setSearchType('flight')}
-                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                    searchType === 'flight'
-                      ? 'bg-white text-blue-700 shadow-sm'
-                      : 'text-gray-600 hover:text-blue-600'
-                  }`}
-                >
-                  <Plane className="w-4 h-4" />
-                  <span className="hidden md:inline">Flight Only</span>
-                </button>
-                <button
-                  onClick={() => setSearchType('package')}
-                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                    searchType === 'package'
-                      ? 'bg-white text-blue-700 shadow-sm'
-                      : 'text-gray-600 hover:text-blue-600'
-                  }`}
-                >
-                  <div className="flex items-center gap-1">
-                    <Plane className="w-4 h-4" />
-                    <span className="text-xs">+</span>
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <span className="hidden md:inline ml-1">Flight + Hotel</span>
-                </button>
-              </div>
-
               {/* Destination and Departure */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* From - Departure Airport */}
@@ -357,7 +321,7 @@ export default function Hero() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="flex items-center text-sm font-medium text-gray-700">
-                    <Calendar className="w-4 h-4 mr-2" /> {searchType === 'flight' ? 'Depart' : 'Check-in'}
+                    <Calendar className="w-4 h-4 mr-2" /> Depart
                   </label>
                   <Input
                     type="date"
@@ -380,7 +344,7 @@ export default function Hero() {
 
                 <div className="space-y-1">
                   <label className="flex items-center text-sm font-medium text-gray-700">
-                    <Calendar className="w-4 h-4 mr-2" /> {searchType === 'flight' ? 'Return' : 'Check-out'}
+                    <Calendar className="w-4 h-4 mr-2" /> Return
                   </label>
                   <Input
                     type="date"
@@ -442,10 +406,10 @@ export default function Hero() {
               {/* Search Button */}
               <Button 
                 onClick={handleSearch}
-                className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl shadow-lg transition-colors mt-2"
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl shadow-lg transition-colors mt-2"
               >
                 <Search className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                Search {searchType === 'flight' ? 'Flights' : 'Flights + Hotels'}
+                Search Flights
               </Button>
             </div>
           </div>

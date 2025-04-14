@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import HolidayDetails from '@/components/sections/holidays/HolidayDetails';
+import DestinationInfo from '@/components/sections/destinations/DestinationInfo';
 import { holidaysData } from '@/data/holidays';
 
 // Hardcoded destinations for demonstration
@@ -26,22 +26,22 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   
   if (!destination) {
     return {
-      title: 'Holiday Not Found',
-      description: 'The requested holiday destination could not be found.'
+      title: 'Destination Not Found',
+      description: 'The requested destination information could not be found.'
     };
   }
 
   return {
-    title: `${destination.name} | Luxury Travel Experience`,
-    description: `Experience the magic of ${destination.name} with our carefully curated tour. Book your dream vacation today!`,
+    title: `${destination.name} | Destination Guide`,
+    description: `Travel guide for ${destination.name} with flight information, local attractions, and travel tips.`,
     openGraph: {
-      title: `${destination.name} | Luxury Travel Experience`,
-      description: `Experience the magic of ${destination.name} with our carefully curated tour.`,
+      title: `${destination.name} | Destination Guide`,
+      description: `Travel guide for ${destination.name} with flight information, local attractions, and travel tips.`,
       images: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff'],
     },
   };
 }
 
-export default function HolidayPage({ params }: { params: { id: string } }) {
-  return <HolidayDetails id={params.id} />;
+export default function DestinationPage({ params }: { params: { id: string } }) {
+  return <DestinationInfo id={params.id} />;
 } 

@@ -1,31 +1,31 @@
-import { Shield, Clock, Heart, Award } from 'lucide-react';
+import { Shield, Clock, Plane, Tag, HeadphonesIcon } from 'lucide-react';
 
 const features = [
   {
     icon: Shield,
-    title: 'Safe Travel',
-    description: 'Your safety is our top priority with secure bookings and verified partners',
+    title: 'Secure Booking',
+    description: 'Book flights with confidence through our secure payment system',
     color: 'text-blue-600',
     bgColor: 'bg-white/80'
   },
   {
-    icon: Clock,
-    title: '24/7 Support',
-    description: 'Round-the-clock assistance for any travel-related queries',
+    icon: Tag,
+    title: 'Competitive Prices',
+    description: 'We offer some of the best flight prices with our price match guarantee',
     color: 'text-indigo-600',
     bgColor: 'bg-white/80'
   },
   {
-    icon: Heart,
-    title: 'Best Experiences',
-    description: 'Curated experiences that create lasting memories',
+    icon: Plane,
+    title: 'Wide Selection',
+    description: 'Access hundreds of airlines and routes to destinations worldwide',
     color: 'text-purple-600',
     bgColor: 'bg-white/80'
   },
   {
-    icon: Award,
-    title: 'Best Price Guarantee',
-    description: 'We offer competitive prices and match any lower price',
+    icon: HeadphonesIcon,
+    title: '24/7 Support',
+    description: 'Our flight booking experts are available around the clock',
     color: 'text-teal-600',
     bgColor: 'bg-white/80'
   }
@@ -43,12 +43,12 @@ export default function WhyChooseUs() {
 
       <div className="max-w-7xl mx-auto px-4 relative">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-blue-600 font-semibold text-sm uppercase tracking-wider">Why Travel With Us</span>
+          <span className="text-blue-700 font-semibold text-sm uppercase tracking-wider">Why Book With Us</span>
           <h2 className="mt-3 text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
-            Experience the Best in Travel
+            Flight Booking Made Simple
           </h2>
           <p className="mt-6 text-xl text-gray-600">
-            We make your travel experience seamless and memorable with our premium services
+            Our streamlined flight booking service helps you find and secure the best flights
           </p>
         </div>
         
@@ -73,16 +73,16 @@ export default function WhyChooseUs() {
         <div className="mt-16 pt-8 border-t border-blue-100">
           <div className="flex flex-wrap justify-center items-center gap-8 text-gray-600 text-sm">
             <span className="flex items-center">
-              <Shield className="w-5 h-5 mr-2 text-blue-600" />
-              Secure Payments
+              <Shield className="w-5 h-5 mr-2 text-blue-700" />
+              Secure Payment Processing
             </span>
             <span className="flex items-center">
-              <Award className="w-5 h-5 mr-2 text-blue-600" />
-              5-Star Rated Service
+              <Plane className="w-5 h-5 mr-2 text-blue-700" />
+              Over 450 Airlines
             </span>
             <span className="flex items-center">
-              <Heart className="w-5 h-5 mr-2 text-blue-600" />
-              100K+ Happy Travelers
+              <Tag className="w-5 h-5 mr-2 text-blue-700" />
+              Best Price Guarantee
             </span>
           </div>
         </div>

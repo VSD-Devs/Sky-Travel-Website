@@ -114,6 +114,73 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Payment Methods */}
+        <div className="mt-12 pt-8 border-t border-gray-100">
+          <div className="flex flex-col items-center">
+            <h3 className="font-semibold text-gray-900 mb-4">Payment Methods</h3>
+            <div className="flex flex-wrap justify-center gap-6">
+              {/* Visa */}
+              <div className="flex flex-col items-center">
+                <div className="bg-[#1434CB] text-white px-6 py-2 rounded h-10 flex items-center justify-center">
+                  <span className="font-bold italic text-xl tracking-tight">VISA</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">Visa</span>
+              </div>
+              
+              {/* Mastercard */}
+              <div className="flex flex-col items-center">
+                <div className="h-10 w-14 relative rounded overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-6 h-10 bg-[#EB001B] rounded-full absolute left-1"></div>
+                    <div className="w-6 h-10 bg-[#F79E1B] rounded-full absolute right-1"></div>
+                    <div className="w-4 h-10 bg-[#FF5F00] absolute mx-auto left-0 right-0 z-10"></div>
+                  </div>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">Mastercard</span>
+              </div>
+              
+              {/* American Express */}
+              <div className="flex flex-col items-center">
+                <div className="bg-[#006FCF] text-white px-2 py-2 rounded h-10 flex items-center justify-center">
+                  <span className="font-bold text-sm">American Express</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">Amex</span>
+              </div>
+              
+              {/* PayPal */}
+              <div className="flex flex-col items-center">
+                <div className="bg-white border border-gray-200 px-4 py-2 rounded h-10 flex items-center justify-center">
+                  <span className="font-bold text-[#253B80]">Pay</span>
+                  <span className="font-bold text-[#179BD7]">Pal</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">PayPal</span>
+              </div>
+              
+              {/* Apple Pay */}
+              <div className="flex flex-col items-center">
+                <div className="bg-black text-white px-4 py-2 rounded h-10 flex items-center justify-center">
+                  <span className="font-medium">Apple Pay</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">Apple Pay</span>
+              </div>
+              
+              {/* Google Pay */}
+              <div className="flex flex-col items-center">
+                <div className="bg-white border border-gray-200 px-4 py-2 rounded h-10 flex items-center justify-center">
+                  <span className="font-medium text-[#4285F4]">G</span>
+                  <span className="font-medium text-[#EA4335]">o</span>
+                  <span className="font-medium text-[#FBBC05]">o</span>
+                  <span className="font-medium text-[#4285F4]">g</span>
+                  <span className="font-medium text-[#34A853]">l</span>
+                  <span className="font-medium text-[#EA4335]">e</span>
+                  <span className="font-medium text-gray-600 ml-1">Pay</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">Google Pay</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">

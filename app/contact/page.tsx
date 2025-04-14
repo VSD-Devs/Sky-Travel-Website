@@ -100,8 +100,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">Phone</h3>
-                    <p className="text-gray-600">+1 (123) 456-7890</p>
-                    <p className="text-gray-600">+1 (123) 456-7891</p>
+                    <p className="text-gray-600">03330384142</p>
                   </div>
                 </div>
 
@@ -121,8 +120,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">Location</h3>
-                    <p className="text-gray-600">1234 Paradise Avenue</p>
-                    <p className="text-gray-600">Wanderlust City, WC 12345</p>
+                    <p className="text-gray-600">61A Blagden St</p>
+                    <p className="text-gray-600">Sheffield S2 5QS</p>
                   </div>
                 </div>
 

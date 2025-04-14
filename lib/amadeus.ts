@@ -425,4 +425,137 @@ export async function getPopularFlights() {
     writeCache(mockFlights);
     return mockFlights;
   }
+}
+
+export async function getFlightsToCountry(countryCode: string) {
+  // Check cache first - we could implement per-country caching here
+  // but for now we'll just return mock data that's specific to each country
+  try {
+    console.log(`Fetching flights to ${countryCode}...`);
+    
+    // In a production environment with actual API keys:
+    // We would use the Amadeus Flight Destinations API to get destinations
+    // in the specified country, then perhaps the Flight Offers Search API
+    // to get pricing for those specific routes
+    
+    // For the mock version, we'll return customized mock data per country
+    return getMockFlightsForCountry(countryCode);
+    
+  } catch (error) {
+    console.error(`Error fetching flights to ${countryCode}:`, error);
+    console.log('Using mock flight data for country');
+    // Return mock data for the country
+    return getMockFlightsForCountry(countryCode);
+  }
+}
+
+function getMockFlightsForCountry(countryCode: string): FlightOffer[] {
+  const departureDate = getFutureDateString();
+  const returnDate = getFutureDateString(37);
+  
+  // Standard mock flight template
+  const createMockFlight = (
+    id: string, 
+    price: string,
+    departureIata: string = 'LHR',
+    departureTerminal: string = '5',
+    arrivalIata: string,
+    arrivalTerminal: string,
+    departureTime: string,
+    arrivalTime: string,
+    returnDepartureTime: string,
+    returnArrivalTime: string,
+    carrier: string,
+    outboundNumber: string,
+    returnNumber: string,
+    outboundDuration: string,
+    returnDuration: string
+  ): FlightOffer => ({
+    id,
+    price: {
+      total: price,
+      currency: 'GBP'
+    },
+    itineraries: [
+      {
+        segments: [
+          {
+            departure: {
+              iataCode: departureIata,
+              terminal: departureTerminal,
+              at: `${departureDate}T${departureTime}`
+            },
+            arrival: {
+              iataCode: arrivalIata,
+              terminal: arrivalTerminal,
+              at: `${departureDate}T${arrivalTime}`
+            },
+            carrierCode: carrier,
+            number: outboundNumber,
+            duration: outboundDuration
+          }
+        ]
+      },
+      {
+        segments: [
+          {
+            departure: {
+              iataCode: arrivalIata,
+              terminal: arrivalTerminal,
+              at: `${returnDate}T${returnDepartureTime}`
+            },
+            arrival: {
+              iataCode: departureIata,
+              terminal: departureTerminal,
+              at: `${returnDate}T${returnArrivalTime}`
+            },
+            carrierCode: carrier,
+            number: returnNumber,
+            duration: returnDuration
+          }
+        ]
+      }
+    ]
+  });
+
+  // Default flights (used if no country match)
+  const defaultFlights = [
+    createMockFlight('default-1', '350.00', 'LHR', '5', 'CDG', '2E', '09:30:00', '11:55:00', '12:30:00', '13:55:00', 'BA', '306', '309', 'PT1H25M', 'PT1H25M'),
+    createMockFlight('default-2', '290.00', 'LHR', '2', 'AMS', '1', '07:15:00', '09:35:00', '17:45:00', '19:05:00', 'KL', '1781', '1180', 'PT1H20M', 'PT1H20M')
+  ];
+
+  // Country-specific mock flights
+  switch(countryCode.toUpperCase()) {
+    case 'FR':
+      return [
+        createMockFlight('fr-1', '320.00', 'LHR', '5', 'CDG', '2E', '08:30:00', '10:55:00', '11:30:00', '12:55:00', 'BA', '306', '309', 'PT1H25M', 'PT1H25M'),
+        createMockFlight('fr-2', '276.00', 'LHR', '2', 'CDG', '1', '07:15:00', '09:35:00', '17:45:00', '19:05:00', 'AF', '1781', '1180', 'PT1H20M', 'PT1H20M'),
+        createMockFlight('fr-3', '189.00', 'LGW', '1', 'ORY', '2', '10:15:00', '12:35:00', '14:45:00', '16:05:00', 'VY', '8745', '8746', 'PT1H20M', 'PT1H20M'),
+        createMockFlight('fr-4', '350.00', 'LHR', '5', 'NCE', '2', '09:30:00', '12:35:00', '13:30:00', '14:45:00', 'BA', '344', '345', 'PT2H05M', 'PT2H15M'),
+        createMockFlight('fr-5', '410.00', 'LHR', '5', 'TLS', '1', '11:30:00', '14:20:00', '15:30:00', '16:35:00', 'BA', '374', '375', 'PT1H50M', 'PT2H05M')
+      ];
+      
+    case 'IT':
+      return [
+        createMockFlight('it-1', '420.00', 'LHR', '5', 'FCO', '1', '08:30:00', '12:05:00', '13:30:00', '15:25:00', 'BA', '548', '549', 'PT2H35M', 'PT2H55M'),
+        createMockFlight('it-2', '380.00', 'LGW', '1', 'MXP', '1', '07:15:00', '10:25:00', '11:45:00', '12:55:00', 'EZY', '8193', '8194', 'PT2H10M', 'PT2H10M'),
+        createMockFlight('it-3', '450.00', 'LHR', '2', 'VCE', '1', '10:15:00', '13:35:00', '14:45:00', '16:15:00', 'IB', '3245', '3246', 'PT2H20M', 'PT2H30M')
+      ];
+      
+    case 'ES':
+      return [
+        createMockFlight('es-1', '310.00', 'LHR', '5', 'MAD', '4', '08:30:00', '11:55:00', '12:30:00', '14:05:00', 'IB', '3167', '3168', 'PT2H25M', 'PT2H35M'),
+        createMockFlight('es-2', '265.00', 'LGW', '1', 'BCN', '2', '07:15:00', '10:35:00', '11:45:00', '13:05:00', 'VY', '7822', '7823', 'PT2H20M', 'PT2H20M'),
+        createMockFlight('es-3', '220.00', 'STN', '1', 'AGP', '3', '10:15:00', '14:05:00', '15:45:00', '17:45:00', 'FR', '8164', '8165', 'PT2H50M', 'PT3H00M')
+      ];
+      
+    case 'GR':
+      return [
+        createMockFlight('gr-1', '450.00', 'LHR', '5', 'ATH', '2', '09:30:00', '15:05:00', '16:30:00', '18:25:00', 'BA', '632', '633', 'PT3H35M', 'PT3H55M'),
+        createMockFlight('gr-2', '380.00', 'LGW', '1', 'HER', '1', '08:15:00', '14:05:00', '15:45:00', '17:55:00', 'EZY', '8753', '8754', 'PT3H50M', 'PT4H10M'),
+      ];
+      
+    default:
+      return defaultFlights;
+  }
 } 

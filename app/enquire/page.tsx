@@ -391,7 +391,7 @@ export default function EnquiryPage() {
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-900">Phone</h3>
-                        <p className="text-gray-600">+1 (123) 456-7890</p>
+                        <p className="text-gray-600">03330384142</p>
                       </div>
                     </div>
 

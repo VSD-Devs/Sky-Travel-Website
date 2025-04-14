@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, ArrowRightIcon } from 'lucide-react';
+import { Clock, ArrowRightIcon, Plane } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Destinations | Sky Limit Travels',
@@ -97,33 +97,92 @@ export default function DestinationsPage() {
                     <h3 className="text-3xl font-bold text-white mb-2">{continent.name}</h3>
                   </div>
                 </div>
-                
-                <div className={index % 2 !== 0 ? 'lg:pr-8' : 'lg:pl-8'}>
-                  <h3 className="text-3xl font-bold mb-4 text-gray-800">Discover {continent.name}</h3>
+                <div>
+                  <h3 className="text-3xl font-bold mb-4 text-gray-900">{continent.name}</h3>
                   <p className="text-lg text-gray-600 mb-6">
                     {continent.description}
                   </p>
                   
                   <div className="mb-8">
-                    <h4 className="text-xl font-semibold mb-4 text-gray-800">Popular Destinations</h4>
+                    <h4 className="text-lg font-semibold mb-3 text-gray-800">Popular Destinations</h4>
                     <div className="flex flex-wrap gap-2">
-                      {continent.destinations.map((destination) => (
-                        <span key={destination} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm">
+                      {continent.destinations.map((destination, destIndex) => (
+                        <Link 
+                          key={destIndex} 
+                          href={
+                            destination === 'New York' 
+                              ? '/destinations/americas/new-york' 
+                              : `/destinations/${continent.id}`
+                          }
+                          className="bg-gray-100 hover:bg-blue-100 px-4 py-2 rounded-full text-gray-700 hover:text-blue-700 transition-colors"
+                        >
                           {destination}
-                        </span>
+                          {destination === 'New York' && (
+                            <span className="ml-1 text-xs font-semibold text-blue-600">(Flights)</span>
+                          )}
+                        </Link>
                       ))}
                     </div>
                   </div>
                   
-                  <Link href={`/destinations/${continent.id.toLowerCase()}`}>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full flex items-center gap-2">
-                      Explore {continent.name}
-                      <ArrowRightIcon className="w-4 h-4" />
-                    </Button>
-                  </Link>
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Link href={`/destinations/${continent.id}`}>
+                      Explore {continent.name} <ArrowRightIcon className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Destinations with Flights */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="container mx-auto">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6 text-gray-900">Featured Destinations with Flights</h2>
+            <div className="w-24 h-1 bg-blue-600 mx-auto mb-8"></div>
+            <p className="text-lg text-gray-600">
+              Explore our handpicked destinations with available flights. Plan your complete trip with Sky Limit Travels.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Link href="/destinations/americas/new-york" className="group">
+              <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
+                <div className="relative h-60 overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3" 
+                    alt="New York City" 
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex justify-between items-end">
+                      <h3 className="text-xl font-bold text-white">New York City, USA</h3>
+                      <div className="flex items-center bg-blue-600 px-3 py-1 rounded-full text-white text-sm font-semibold">
+                        From £750
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-600 mb-4">
+                    Experience the energy and iconic sights of the city that never sleeps, from Central Park to Times Square.
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-sm text-blue-600">
+                      <Plane className="w-4 h-4 mr-1" />
+                      <span>Flights Available</span>
+                    </div>
+                    <span className="text-blue-600 font-medium group-hover:underline">View Details</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            
+            {/* Other destinations can be added here */}
           </div>
         </div>
       </section>
