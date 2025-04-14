@@ -29,7 +29,7 @@ export default function Navigation() {
           />
           <div className="flex flex-col">
             <span className="font-bold text-2xl text-blue-800">Sky Limit</span>
-            <span className="text-xs font-semibold tracking-[0.2em] text-blue-800">LUXURY TRAVELS</span>
+            <span className="text-xs font-semibold tracking-[0.2em] text-blue-800">TRAVELS</span>
           </div>
         </Link>
         
@@ -122,95 +122,16 @@ export default function Navigation() {
                         </Link>
                       </div>
                     </div>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-10 px-4 text-[15px] font-medium text-gray-800 hover:text-blue-800 bg-white hover:bg-blue-50 data-[state=open]:bg-blue-50 data-[state=open]:text-blue-800 rounded-lg transition-colors">
-                  Destinations
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="w-[500px] lg:w-[600px] bg-white rounded-xl shadow-lg overflow-hidden">
-                    {/* Embedded Header for Desktop Dropdown */}
-                    <div className="bg-blue-800 p-4 text-center">
-                      <h3 className="text-lg font-bold text-white mb-1">
-                        Explore Destinations
-                      </h3>
-                      <p className="text-sm text-blue-100">
-                        Discover your perfect getaway
-                      </p>
-                    </div>
-                    
-                    {/* Desktop Dropdown Content */}
-                    <div className="grid grid-cols-2 gap-2 p-6">
-                      <div>
-                        <Link href="/destinations/europe" legacyBehavior passHref>
-                          <a className="group flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100 shrink-0">
-                              <img 
-                                src="/images/europe-thumb.webp" 
-                                alt="Europe" 
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-800 transition-colors">Europe</h4>
-                              <p className="text-sm text-gray-600">Rich history & culture</p>
-                            </div>
-                          </a>
-                        </Link>
-                        
-                        <Link href="/destinations/asia" legacyBehavior passHref>
-                          <a className="group flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100 shrink-0">
-                              <img 
-                                src="/images/asia-thumb.webp" 
-                                alt="Asia" 
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-800 transition-colors">Asia</h4>
-                              <p className="text-sm text-gray-600">Ancient traditions</p>
-                            </div>
-                          </a>
-                        </Link>
-                      </div>
-                      
-                      <div>
-                        <Link href="/destinations/americas" legacyBehavior passHref>
-                          <a className="group flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100 shrink-0">
-                              <img 
-                                src="/images/americas-thumb.webp" 
-                                alt="Americas" 
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-800 transition-colors">Americas</h4>
-                              <p className="text-sm text-gray-600">Natural wonders</p>
-                            </div>
-                          </a>
-                        </Link>
-                        
-                        <Link href="/destinations/oceania" legacyBehavior passHref>
-                          <a className="group flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100 shrink-0">
-                              <img 
-                                src="/images/oceania-thumb.webp" 
-                                alt="Oceania" 
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-800 transition-colors">Oceania</h4>
-                              <p className="text-sm text-gray-600">Island paradises</p>
-                            </div>
-                          </a>
-                        </Link>
-                      </div>
+
+                    <div className="p-4 bg-gray-50 border-t border-gray-100">
+                      <Link href="/flights" legacyBehavior passHref>
+                        <a className="text-blue-600 font-medium hover:text-blue-800 transition-colors inline-flex items-center">
+                          View all flight destinations
+                          <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </a>
+                      </Link>
                     </div>
                   </div>
                 </NavigationMenuContent>
@@ -277,46 +198,46 @@ export default function Navigation() {
       >
         <div className="pt-24 px-6 h-full overflow-y-auto">
           <nav className="space-y-6">
-            {/* Featured Flights Link at the top of mobile menu */}
+            {/* Flights section at the top of mobile menu */}
             <div className="mb-6">
               <Link 
                 href="/flights" 
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="block px-4 py-3 text-center bg-blue-50 text-blue-800 font-medium rounded-lg transition-colors border border-blue-200 hover:bg-blue-100"
               >
-                Flights
+                All Flights
               </Link>
             </div>
           
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-blue-800 px-4 mb-2">Destinations</p>
+              <p className="text-sm font-semibold text-blue-800 px-4 mb-2">Popular Flight Destinations</p>
               <Link 
-                href="/destinations/europe" 
+                href="/flights/countries/france" 
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
-                Europe
+                France
               </Link>
               <Link 
-                href="/destinations/asia" 
+                href="/flights/countries/spain" 
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
-                Asia
+                Spain
               </Link>
               <Link 
-                href="/destinations/americas" 
+                href="/flights/countries/italy" 
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
-                Americas
+                Italy
               </Link>
               <Link 
-                href="/destinations/oceania" 
+                href="/flights/countries/greece" 
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
-                Oceania
+                Greece
               </Link>
             </div>
 

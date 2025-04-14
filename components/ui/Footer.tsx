@@ -16,9 +16,10 @@ const footerLinks = {
     { name: 'Custom Packages', href: '/experiences/custom' }
   ],
   legal: [
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
-    { name: 'Cookie Policy', href: '/cookies' }
+    { name: 'Terms & Conditions', href: '/legal/terms' },
+    { name: 'Privacy Policy', href: '/legal/privacy' },
+    { name: 'Refund Policy', href: '/legal/refund' },
+    { name: 'Cookie Policy', href: '/legal/cookies' }
   ]
 };
 
