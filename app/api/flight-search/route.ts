@@ -1,83 +1,97 @@
-import { NextResponse } from 'next/server';
-import { getMockFlightData } from '@/lib/amadeus';
-import Amadeus from 'amadeus';
+import { NextRequest, NextResponse } from 'next/server';
+import { searchFlights } from '@/lib/amadeus';
+import { LogLevel, logAmadeusEvent, handleAmadeusError, createErrorResponse } from '@/lib/amadeus-error-logger';
+import { isRateLimited } from '@/lib/api-rate-limiter';
 
-// Initialize Amadeus client with test environment
-const amadeus = new Amadeus({
-  clientId: process.env.AMADEUS_CLIENT_ID,
-  clientSecret: process.env.AMADEUS_CLIENT_SECRET,
-  hostname: 'test.api.amadeus.com'
-});
-
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const requestId = crypto.randomUUID().substring(0, 8);
+  
+  // Check rate limits
+  const rateLimit = isRateLimited(request, 'flight-search');
+  if (!rateLimit.allowed) {
+    logAmadeusEvent(
+      LogLevel.WARNING,
+      'flight-search-api',
+      `Rate limit exceeded [${requestId}]: ${rateLimit.reason}`,
+      { ip: request.ip, reason: rateLimit.reason }
+    );
+    
+    return createErrorResponse(
+      `Rate limit exceeded: ${rateLimit.reason}`,
+      429,
+      { requestId }
+    );
+  }
+  
   try {
-    // Get search parameters from URL
     const { searchParams } = new URL(request.url);
+    
+    // Get search parameters
     const origin = searchParams.get('origin') || 'LHR';
     const destination = searchParams.get('destination') || '';
     const departureDate = searchParams.get('departureDate') || '';
     const returnDate = searchParams.get('returnDate') || '';
     const adults = searchParams.get('adults') || '1';
     const children = searchParams.get('children') || '0';
-
-    console.log('Flight search parameters:', {
-      origin, destination, departureDate, returnDate, adults, children
-    });
-
-    // In a production environment, we would use this code to call the Amadeus API
-    // However, for testing purposes, we're using mock data
-    /*
-    // Set up parameters for the API call
-    let searchParams = {
+    
+    const searchParams2 = {
       originLocationCode: origin,
       destinationLocationCode: destination,
-      departureDate: departureDate,
-      adults: adults
+      departureDate,
+      ...(returnDate && { returnDate }),
+      adults,
+      ...(children !== '0' && { children })
     };
     
-    // Add returnDate if it exists (for round trips)
-    if (returnDate) {
-      searchParams = {
-        ...searchParams,
-        returnDate: returnDate
-      };
-    }
+    // Log search request
+    logAmadeusEvent(
+      LogLevel.INFO,
+      'flight-search-api',
+      `Flight search request [${requestId}]: ${origin} → ${destination}`,
+      null,
+      searchParams2
+    );
     
-    // Add children if there are any
-    if (parseInt(children) > 0) {
-      searchParams = {
-        ...searchParams,
-        children: children
-      };
-    }
-    
-    const response = await amadeus.shopping.flightOffersSearch.get(searchParams);
-    return NextResponse.json(response.data);
-    */
-
-    // For testing with test credentials, we'll use mock data
-    // Customize mock data based on search parameters
-    const mockFlights = getMockFlightData();
-    
-    // Filter flights based on destination if provided
-    // This is only for demonstration - in a real app, the Amadeus API would handle this
-    let filteredFlights = mockFlights;
-    if (destination && destination.length === 3) {
-      filteredFlights = mockFlights.filter(flight => 
-        flight.itineraries[0]?.segments[0]?.arrival.iataCode === destination.toUpperCase()
+    // Validate essential parameters
+    if (!destination || !departureDate) {
+      logAmadeusEvent(
+        LogLevel.WARNING,
+        'flight-search-api',
+        `Missing required parameters [${requestId}]`,
+        { origin, destination, departureDate }
+      );
+      
+      return createErrorResponse(
+        'Missing required parameters: destination and departureDate are required',
+        400,
+        { requestId }
       );
     }
-
-    return NextResponse.json(filteredFlights);
-  } catch (error) {
-    console.error('Error in flight search API:', error);
-    const errorMessage = error instanceof Error 
-      ? `${error.name}: ${error.message}` 
-      : 'Failed to search for flights';
     
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
+    // Call the Amadeus API through our wrapper function
+    const flightData = await searchFlights(searchParams2);
+    
+    // Log successful results
+    logAmadeusEvent(
+      LogLevel.INFO,
+      'flight-search-api',
+      `Search completed [${requestId}]: Found ${flightData?.length || 0} flights`,
+      { resultCount: flightData?.length || 0 }
+    );
+    
+    return NextResponse.json(flightData);
+  } catch (error) {
+    // Use our error handler
+    const errorDetails = handleAmadeusError(
+      error,
+      'flight-search-api',
+      { requestId, url: request.url }
+    );
+    
+    return createErrorResponse(
+      errorDetails.error,
+      errorDetails.status,
+      { ...errorDetails.details, requestId }
     );
   }
 } 

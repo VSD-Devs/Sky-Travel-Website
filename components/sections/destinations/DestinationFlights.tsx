@@ -24,6 +24,8 @@ export default function DestinationFlights({ destination, destinationName }: Des
     const fetchFlights = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
         // Convert NYC to JFK for API call
         const destinationCode = destination.toUpperCase() === 'NYC' ? 'JFK' : destination.toUpperCase();
         const response = await fetch(`/api/destination-flights?destination=${destinationCode}&origin=LHR`);
@@ -43,6 +45,7 @@ export default function DestinationFlights({ destination, destinationName }: Des
         }
       } catch (err) {
         console.error('Error fetching destination flights:', err);
+        setFlights([]);
         setError(err instanceof Error ? err.message : 'Failed to load flights');
       } finally {
         setLoading(false);
@@ -51,6 +54,9 @@ export default function DestinationFlights({ destination, destinationName }: Des
 
     if (destination) {
       fetchFlights();
+    } else {
+      setError("No destination specified");
+      setLoading(false);
     }
   }, [destination]);
 

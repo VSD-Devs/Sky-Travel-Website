@@ -264,7 +264,7 @@ export default function AmericasDestinations() {
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                       asChild
                     >
-                      <Link href="/enquire">Book Now</Link>
+                      <Link href="/enquire">Enquire Now</Link>
                     </Button>
                     
                     {/* Add View Flights button that links to the detailed page for each destination */}

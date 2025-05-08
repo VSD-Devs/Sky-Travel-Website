@@ -8,6 +8,7 @@ import { FlightOffer } from '@/lib/amadeus';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatAirportDisplay, formatRouteDisplay } from '@/data/airports';
 
 export default function PopularFlights() {
   const router = useRouter();
@@ -68,25 +69,6 @@ export default function PopularFlights() {
     return airlines[code] || code;
   };
 
-  // Function to get city name from code
-  const getCityName = (code: string): string => {
-    const airports: Record<string, string> = {
-      'CDG': 'Paris, France',
-      'MAD': 'Madrid, Spain',
-      'FCO': 'Rome, Italy',
-      'ATH': 'Athens, Greece',
-      'ZAG': 'Zagreb, Croatia',
-      'IST': 'Istanbul, Turkey',
-      'LHR': 'London, UK',
-      'JFK': 'New York, USA',
-      'DXB': 'Dubai, UAE',
-      'SIN': 'Singapore',
-      'HKG': 'Hong Kong',
-      'SYD': 'Sydney, Australia',
-    };
-    return airports[code] || code;
-  };
-
   const countryDestinations = [
     {
       id: 'france',
@@ -132,6 +114,9 @@ export default function PopularFlights() {
     },
   ];
 
+  // Display limited flights unless viewAll is true
+  const displayedFlights = viewAll ? flights : flights.slice(0, 3);
+
   if (loading) {
     return (
       <section className="py-16 px-4 bg-gray-50">
@@ -172,9 +157,6 @@ export default function PopularFlights() {
       </section>
     );
   }
-
-  // Display limited flights unless viewAll is true
-  const displayedFlights = viewAll ? flights : flights.slice(0, 3);
 
   return (
     <div className="bg-white py-16">
@@ -223,7 +205,7 @@ export default function PopularFlights() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Popular Flight Routes</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              View our top flight routes from London Heathrow with competitive prices
+              View our top flight routes with competitive prices
             </p>
           </div>
 
@@ -253,14 +235,14 @@ export default function PopularFlights() {
                 month: 'short'
               });
 
-              // Get destination city name
-              const destinationCity = getCityName(outboundSegment.arrival.iataCode);
+              // Use our new helper to get a user-friendly destination display
+              const destinationDisplay = formatAirportDisplay(outboundSegment.arrival.iataCode);
               
               return (
                 <Card key={flight.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-transparent hover:border-blue-100">
                   <div className="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
                     <div>
-                      <h3 className="font-bold text-lg">{destinationCity}</h3>
+                      <h3 className="font-bold text-lg">{destinationDisplay.split('(')[0].trim()}</h3>
                       <div className="text-sm opacity-90">Return Flight</div>
                     </div>
                     <div className="text-xl font-bold">
@@ -268,16 +250,20 @@ export default function PopularFlights() {
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <div className="mb-4 flex items-center text-sm text-gray-600">
-                      <ArrowRightLeft className="w-4 h-4 mr-2 text-blue-600" />
-                      <span>London Heathrow ↔ {destinationCity}</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        {formatRouteDisplay(outboundSegment.departure.iataCode, outboundSegment.arrival.iataCode)}
+                      </div>
+                      <div className="text-sm bg-blue-50 text-blue-700 py-1 px-2 rounded">
+                        {getAirlineName(outboundSegment.carrierCode)}
+                      </div>
                     </div>
 
                     <div className="bg-blue-50 p-3 rounded-md mb-3">
                       <div className="text-xs font-medium text-blue-800 mb-2">Outbound · {departureDate}</div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="text-gray-600">
-                          <div className="font-medium">{outboundSegment.departure.iataCode}</div>
+                          <div className="font-medium">{formatAirportDisplay(outboundSegment.departure.iataCode)}</div>
                           <div>{departureTime}</div>
                         </div>
                         <div className="flex items-center">
@@ -285,7 +271,7 @@ export default function PopularFlights() {
                           <span className="text-gray-500">{outboundSegment.duration.replace('PT', '')}</span>
                         </div>
                         <div className="text-gray-600 text-right">
-                          <div className="font-medium">{outboundSegment.arrival.iataCode}</div>
+                          <div className="font-medium">{formatAirportDisplay(outboundSegment.arrival.iataCode)}</div>
                           <div>{arrivalTime}</div>
                         </div>
                       </div>
@@ -305,7 +291,7 @@ export default function PopularFlights() {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <div className="text-gray-600">
-                            <div className="font-medium">{returnSegment.departure.iataCode}</div>
+                            <div className="font-medium">{formatAirportDisplay(returnSegment.departure.iataCode)}</div>
                             <div>{new Date(returnSegment.departure.at).toLocaleTimeString('en-GB', { 
                               hour: '2-digit', minute: '2-digit' 
                             })}</div>
@@ -315,7 +301,7 @@ export default function PopularFlights() {
                             <span className="text-gray-500">{returnSegment.duration.replace('PT', '')}</span>
                           </div>
                           <div className="text-gray-600 text-right">
-                            <div className="font-medium">{returnSegment.arrival.iataCode}</div>
+                            <div className="font-medium">{formatAirportDisplay(returnSegment.arrival.iataCode)}</div>
                             <div>{new Date(returnSegment.arrival.at).toLocaleTimeString('en-GB', { 
                               hour: '2-digit', minute: '2-digit' 
                             })}</div>
@@ -329,26 +315,13 @@ export default function PopularFlights() {
                     )}
 
                     <Button 
+                      asChild
                       className="w-full mt-4 bg-blue-700 hover:bg-blue-800 text-white"
-                      onClick={() => {
-                        const queryParams = new URLSearchParams({
-                          flightId: flight.id,
-                          origin: outboundSegment.departure.iataCode,
-                          originCity: getCityName(outboundSegment.departure.iataCode),
-                          destination: outboundSegment.arrival.iataCode,
-                          destinationCity: getCityName(outboundSegment.arrival.iataCode),
-                          departureDate: outboundSegment.departure.at,
-                          returnDate: returnSegment?.departure.at || '',
-                          price: flight.price.total,
-                          airline: outboundSegment.carrierCode,
-                          flightNumber: outboundSegment.number
-                        });
-                        
-                        router.push(`/enquire?${queryParams.toString()}`);
-                      }}
                     >
-                      Book This Flight
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                      <Link href={`/flights/${flight.id}`}>
+                        Enquire Now
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

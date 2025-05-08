@@ -175,7 +175,7 @@ export default function FlightsPage() {
                       variant="outline" 
                       className="text-blue-600 border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                     >
-                      <Link href={destination.id === 'new-york' ? '/destinations/americas/new-york' : `/flights/${destination.id}`}>
+                      <Link href={destination.id === 'new-york' ? '/destinations/americas/new-york' : `/flights/countries/${destination.id}`}>
                         View Flights
                       </Link>
                     </Button>

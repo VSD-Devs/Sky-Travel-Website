@@ -2,11 +2,10 @@ import Amadeus from 'amadeus';
 import fs from 'fs';
 import path from 'path';
 
-// Initialize Amadeus client with test environment
+// Initialize Amadeus client with production environment
 const amadeus = new Amadeus({
   clientId: process.env.AMADEUS_CLIENT_ID,
-  clientSecret: process.env.AMADEUS_CLIENT_SECRET,
-  hostname: 'test.api.amadeus.com'
+  clientSecret: process.env.AMADEUS_CLIENT_SECRET
 });
 
 export interface FlightOffer {
@@ -34,13 +33,29 @@ export interface FlightOffer {
   }[];
 }
 
+// Cache durations in milliseconds
+const CACHE_DURATIONS = {
+  POPULAR_FLIGHTS: 60 * 60 * 1000,        // 1 hour for popular flights
+  FLIGHT_SEARCH: 6 * 60 * 60 * 1000,      // 6 hours for specific searches
+  COUNTRY_FLIGHTS: 12 * 60 * 60 * 1000,   // 12 hours for country-specific flights
+  DEFAULT: 24 * 60 * 60 * 1000            // 24 hours default fallback
+};
+
 // Cache management
 const CACHE_FILE = path.join(process.cwd(), 'public', 'cache', 'flight-cache.json');
-const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const COUNTRY_CACHE_DIR = path.join(process.cwd(), 'public', 'cache', 'countries');
+// Get cache duration from environment variable or use default 1 day
+const CACHE_DURATION_DAYS = parseInt(process.env.CACHE_DURATION_DAYS || '1', 10);
+const CACHE_DURATION_MS = CACHE_DURATION_DAYS * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+
+// Maximum results to return from API to reduce costs
+const MAX_FLIGHT_RESULTS = 10; // Increased from 5 to get more options
 
 // Ensure cache directory exists
 function ensureCacheDirectory() {
   const cacheDir = path.join(process.cwd(), 'public', 'cache');
+  const countryCacheDir = path.join(process.cwd(), 'public', 'cache', 'countries');
+  
   if (!fs.existsSync(cacheDir)) {
     try {
       fs.mkdirSync(cacheDir, { recursive: true });
@@ -48,514 +63,1279 @@ function ensureCacheDirectory() {
       console.error('Error creating cache directory:', error);
     }
   }
-}
-
-// Read cache if it exists and is not expired
-function readCache(): { data: FlightOffer[] | null; timestamp: number } | null {
-  try {
-    ensureCacheDirectory();
-    if (fs.existsSync(CACHE_FILE)) {
-      const cacheContent = fs.readFileSync(CACHE_FILE, 'utf-8');
-      const cache = JSON.parse(cacheContent);
-      
-      // Check if cache is still valid (less than one day old)
-      const now = Date.now();
-      if (now - cache.timestamp < ONE_DAY_MS) {
-        console.log('Using cached flight data from', new Date(cache.timestamp));
-        return cache;
-      }
-      console.log('Cache expired, fetching fresh data');
+  
+  if (!fs.existsSync(countryCacheDir)) {
+    try {
+      fs.mkdirSync(countryCacheDir, { recursive: true });
+    } catch (error) {
+      console.error('Error creating country cache directory:', error);
     }
-  } catch (error) {
-    console.error('Error reading cache:', error);
   }
-  return null;
 }
 
-// Write data to cache
-function writeCache(data: FlightOffer[]) {
+// Read from cache
+function readCache() {
+  ensureCacheDirectory();
+  
+  if (!fs.existsSync(CACHE_FILE)) {
+    return null;
+  }
+  
   try {
-    ensureCacheDirectory();
-    const cacheData = {
-      data,
-      timestamp: Date.now()
-    };
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(cacheData));
-    console.log('Flight data cached at', new Date());
+    const data = fs.readFileSync(CACHE_FILE, 'utf8');
+    const cache = JSON.parse(data);
+    
+    // Check if cache is still valid
+    if (cache.timestamp && (Date.now() - cache.timestamp < CACHE_DURATION_MS)) {
+      return cache;
+    }
+    
+    return null;
   } catch (error) {
-    console.error('Error writing cache:', error);
+    console.error('Error reading flight cache:', error);
+    return null;
   }
 }
 
-// Helper function to get a date in the future in YYYY-MM-DD format
-function getFutureDateString(daysFromNow = 30) {
+// Write to cache
+function writeCache(data: any) {
+  ensureCacheDirectory();
+  
+  try {
+    const cache = {
+      timestamp: Date.now(),
+      data: data
+    };
+    
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
+    console.log('Flight cache updated');
+  } catch (error) {
+    console.error('Error writing flight cache:', error);
+  }
+}
+
+// Read country-specific cache
+function readCountryCache(countryCode: string) {
+  ensureCacheDirectory();
+  
+  const cacheFile = path.join(COUNTRY_CACHE_DIR, `${countryCode.toLowerCase()}.json`);
+  
+  if (!fs.existsSync(cacheFile)) {
+    return null;
+  }
+  
+  try {
+    const data = fs.readFileSync(cacheFile, 'utf8');
+    const cache = JSON.parse(data);
+    
+    // Check if cache is still valid
+    if (cache.timestamp && (Date.now() - cache.timestamp < CACHE_DURATION_MS)) {
+      return cache;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Error reading country cache for ${countryCode}:`, error);
+    return null;
+  }
+}
+
+// Write country-specific cache
+function writeCountryCache(countryCode: string, data: any) {
+  ensureCacheDirectory();
+  
+  try {
+    const cache = {
+      timestamp: Date.now(),
+      data: data
+    };
+    
+    const cacheFile = path.join(COUNTRY_CACHE_DIR, `${countryCode.toLowerCase()}.json`);
+    fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+    console.log(`Country cache updated for ${countryCode}`);
+  } catch (error) {
+    console.error(`Error writing country cache for ${countryCode}:`, error);
+  }
+}
+
+// Helper function for getting future dates
+function getFutureDateString(daysAhead = 30) {
   const date = new Date();
-  date.setDate(date.getDate() + daysFromNow);
+  date.setDate(date.getDate() + daysAhead);
   return date.toISOString().split('T')[0];
 }
 
-// Get example data when API fails - exported for use in flight search API
-export function getMockFlightData() {
+// Create mock flight data for a country as fallback
+function createMockFlightsForCountry(countryCode: string): FlightOffer[] {
+  // Format dates for mock data
   const departureDate = getFutureDateString();
-  const returnDate = getFutureDateString(37);
+  const returnDate = getFutureDateString(7);
   
-  return [
-    {
-      id: 'mock-1',
-      price: {
-        total: '350.00',
-        currency: 'GBP'
-      },
-      itineraries: [
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'LHR',
-                terminal: '5',
-                at: `${departureDate}T09:30:00`
-              },
-              arrival: {
-                iataCode: 'CDG',
-                terminal: '2E',
-                at: `${departureDate}T11:55:00`
-              },
-              carrierCode: 'BA',
-              number: '306',
-              duration: 'PT1H25M'
-            }
-          ]
-        },
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'CDG',
-                terminal: '2E',
-                at: `${returnDate}T12:30:00`
-              },
-              arrival: {
-                iataCode: 'LHR',
-                terminal: '5',
-                at: `${returnDate}T13:55:00`
-              },
-              carrierCode: 'BA',
-              number: '309',
-              duration: 'PT1H25M'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'mock-2',
-      price: {
-        total: '290.00',
-        currency: 'GBP'
-      },
-      itineraries: [
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'LHR',
-                terminal: '2',
-                at: `${departureDate}T07:15:00`
-              },
-              arrival: {
-                iataCode: 'CDG',
-                terminal: '1',
-                at: `${departureDate}T09:35:00`
-              },
-              carrierCode: 'AF',
-              number: '1781',
-              duration: 'PT1H20M'
-            }
-          ]
-        },
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'CDG',
-                terminal: '1',
-                at: `${returnDate}T17:45:00`
-              },
-              arrival: {
-                iataCode: 'LHR',
-                terminal: '2',
-                at: `${returnDate}T19:05:00`
-              },
-              carrierCode: 'AF',
-              number: '1180',
-              duration: 'PT1H20M'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'mock-3',
-      price: {
-        total: '420.00',
-        currency: 'GBP'
-      },
-      itineraries: [
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'LHR',
-                terminal: '3',
-                at: `${departureDate}T14:25:00`
-              },
-              arrival: {
-                iataCode: 'AMS',
-                terminal: 'Main',
-                at: `${departureDate}T16:55:00`
-              },
-              carrierCode: 'KL',
-              number: '1010',
-              duration: 'PT1H30M'
-            }
-          ]
-        },
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'AMS',
-                terminal: 'Main',
-                at: `${returnDate}T10:15:00`
-              },
-              arrival: {
-                iataCode: 'LHR',
-                terminal: '3',
-                at: `${returnDate}T11:45:00`
-              },
-              carrierCode: 'KL',
-              number: '1001',
-              duration: 'PT1H30M'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'mock-4',
-      price: {
-        total: '520.00',
-        currency: 'GBP'
-      },
-      itineraries: [
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'LHR',
-                terminal: '2',
-                at: `${departureDate}T10:10:00`
-              },
-              arrival: {
-                iataCode: 'FCO',
-                terminal: '1',
-                at: `${departureDate}T13:40:00`
-              },
-              carrierCode: 'AZ',
-              number: '203',
-              duration: 'PT2H30M'
-            }
-          ]
-        },
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'FCO',
-                terminal: '1',
-                at: `${returnDate}T14:30:00`
-              },
-              arrival: {
-                iataCode: 'LHR',
-                terminal: '2',
-                at: `${returnDate}T16:50:00`
-              },
-              carrierCode: 'AZ',
-              number: '204',
-              duration: 'PT2H20M'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'mock-5',
-      price: {
-        total: '610.00',
-        currency: 'GBP'
-      },
-      itineraries: [
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'LHR',
-                terminal: '1',
-                at: `${departureDate}T12:00:00`
-              },
-              arrival: {
-                iataCode: 'MAD',
-                terminal: '4',
-                at: `${departureDate}T15:30:00`
-              },
-              carrierCode: 'IB',
-              number: '3167',
-              duration: 'PT2H30M'
-            }
-          ]
-        },
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'MAD',
-                terminal: '4',
-                at: `${returnDate}T08:30:00`
-              },
-              arrival: {
-                iataCode: 'LHR',
-                terminal: '1',
-                at: `${returnDate}T10:05:00`
-              },
-              carrierCode: 'IB',
-              number: '3170',
-              duration: 'PT2H35M'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'mock-6',
-      price: {
-        total: '750.00',
-        currency: 'GBP'
-      },
-      itineraries: [
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'LHR',
-                terminal: '5',
-                at: `${departureDate}T15:20:00`
-              },
-              arrival: {
-                iataCode: 'JFK',
-                terminal: '7',
-                at: `${departureDate}T18:40:00`
-              },
-              carrierCode: 'BA',
-              number: '175',
-              duration: 'PT7H20M'
-            }
-          ]
-        },
-        {
-          segments: [
-            {
-              departure: {
-                iataCode: 'JFK',
-                terminal: '7',
-                at: `${returnDate}T22:15:00`
-              },
-              arrival: {
-                iataCode: 'LHR',
-                terminal: '5',
-                at: `${returnDate}T10:30:00`
-              },
-              carrierCode: 'BA',
-              number: '112',
-              duration: 'PT6H15M'
-            }
-          ]
-        }
-      ]
-    }
+  // Map country codes to display names
+  const countryNames: {[key: string]: string} = {
+    'FR': 'France',
+    'IT': 'Italy',
+    'ES': 'Spain',
+    'GR': 'Greece',
+    'DE': 'Germany',
+    'US': 'United States',
+    'GB': 'United Kingdom',
+    'PT': 'Portugal',
+    'HR': 'Croatia',
+    'TR': 'Turkey',
+    'NL': 'Netherlands',
+    'BE': 'Belgium',
+    'AT': 'Austria',
+    'CH': 'Switzerland',
+    'CA': 'Canada',
+    'AU': 'Australia',
+    'JP': 'Japan',
+    'SG': 'Singapore',
+    'AE': 'United Arab Emirates',
+  };
+  
+  // Map country codes to multiple popular airports
+  const countryAirports: {[key: string]: {code: string, city: string, terminal: string}[]} = {
+    'FR': [
+      {code: 'CDG', city: 'Paris', terminal: '2E'},
+      {code: 'ORY', city: 'Paris', terminal: '1'},
+      {code: 'NCE', city: 'Nice', terminal: '2'},
+      {code: 'LYS', city: 'Lyon', terminal: '1A'},
+      {code: 'MRS', city: 'Marseille', terminal: '1'},
+      {code: 'TLS', city: 'Toulouse', terminal: '1'},
+    ],
+    'IT': [
+      {code: 'FCO', city: 'Rome', terminal: '3'},
+      {code: 'MXP', city: 'Milan', terminal: '1'},
+      {code: 'VCE', city: 'Venice', terminal: '1'},
+      {code: 'NAP', city: 'Naples', terminal: '1'},
+      {code: 'CTA', city: 'Catania', terminal: 'A'},
+      {code: 'FLR', city: 'Florence', terminal: '1'},
+    ],
+    'ES': [
+      {code: 'MAD', city: 'Madrid', terminal: '4'},
+      {code: 'BCN', city: 'Barcelona', terminal: '1'},
+      {code: 'AGP', city: 'Malaga', terminal: '3'},
+      {code: 'PMI', city: 'Palma', terminal: 'C'},
+      {code: 'LPA', city: 'Gran Canaria', terminal: 'A'},
+      {code: 'TFS', city: 'Tenerife', terminal: 'S'},
+    ],
+    'GR': [
+      {code: 'ATH', city: 'Athens', terminal: 'B'},
+      {code: 'JTR', city: 'Santorini', terminal: '1'},
+      {code: 'HER', city: 'Heraklion', terminal: '1'},
+      {code: 'RHO', city: 'Rhodes', terminal: '1'},
+      {code: 'CFU', city: 'Corfu', terminal: '1'},
+      {code: 'JMK', city: 'Mykonos', terminal: '1'},
+    ],
+    'PT': [
+      {code: 'LIS', city: 'Lisbon', terminal: '1'},
+      {code: 'OPO', city: 'Porto', terminal: '1'},
+      {code: 'FAO', city: 'Faro', terminal: '1'},
+      {code: 'FNC', city: 'Funchal', terminal: '1'},
+      {code: 'PDL', city: 'Ponta Delgada', terminal: '1'},
+    ],
+    'HR': [
+      {code: 'ZAG', city: 'Zagreb', terminal: '1'},
+      {code: 'DBV', city: 'Dubrovnik', terminal: 'B'},
+      {code: 'SPU', city: 'Split', terminal: '1'},
+      {code: 'ZAD', city: 'Zadar', terminal: '1'},
+      {code: 'PUY', city: 'Pula', terminal: '1'},
+    ],
+    'TR': [
+      {code: 'IST', city: 'Istanbul', terminal: 'I'},
+      {code: 'AYT', city: 'Antalya', terminal: '1'},
+      {code: 'ADB', city: 'Izmir', terminal: 'I'},
+      {code: 'BJV', city: 'Bodrum', terminal: 'I'},
+      {code: 'DLM', city: 'Dalaman', terminal: 'I'},
+    ],
+    'DE': [
+      {code: 'FRA', city: 'Frankfurt', terminal: '1'},
+      {code: 'MUC', city: 'Munich', terminal: '2'},
+      {code: 'BER', city: 'Berlin', terminal: '1'},
+      {code: 'DUS', city: 'Dusseldorf', terminal: 'A'},
+      {code: 'HAM', city: 'Hamburg', terminal: '1'},
+    ],
+    'NL': [
+      {code: 'AMS', city: 'Amsterdam', terminal: '2'},
+      {code: 'RTM', city: 'Rotterdam', terminal: '1'},
+      {code: 'EIN', city: 'Eindhoven', terminal: '1'},
+    ],
+    // Default for any other country
+    'XX': [
+      {code: 'XXX', city: 'Unknown', terminal: '1'}
+    ]
+  };
+  
+  // UK airports (origins)
+  const ukAirports = [
+    {code: 'LHR', city: 'London', terminal: '5'},
+    {code: 'LGW', city: 'London', terminal: 'S'},
+    {code: 'STN', city: 'London', terminal: '1'},
+    {code: 'MAN', city: 'Manchester', terminal: '1'},
+    {code: 'BHX', city: 'Birmingham', terminal: '1'},
+    {code: 'EDI', city: 'Edinburgh', terminal: '1'},
+    {code: 'GLA', city: 'Glasgow', terminal: '1'},
   ];
+  
+  // Airlines that typically fly to these destinations
+  const airlines = [
+    {code: 'BA', name: 'British Airways'},
+    {code: 'LH', name: 'Lufthansa'},
+    {code: 'AF', name: 'Air France'},
+    {code: 'U2', name: 'easyJet'},
+    {code: 'FR', name: 'Ryanair'},
+    {code: 'IB', name: 'Iberia'},
+    {code: 'AZ', name: 'Alitalia'},
+    {code: 'TK', name: 'Turkish Airlines'},
+    {code: 'LX', name: 'Swiss'},
+    {code: 'EY', name: 'Etihad Airways'},
+  ];
+  
+  const countryName = countryNames[countryCode.toUpperCase()] || countryCode;
+  
+  // Get airports for this country, defaulting to a general list if not found
+  const destinationAirports = countryAirports[countryCode.toUpperCase()] || countryAirports['XX'];
+  
+  // Create mock flight offers for this country
+  const mockFlights: FlightOffer[] = [];
+  
+  // The number of mock flights to generate
+  const numberOfFlights = 10;
+  
+  // Create flights to different cities in the country
+  for (let i = 0; i < numberOfFlights; i++) {
+    // Select an airport from the country (cycling through all available)
+    const destinationAirport = destinationAirports[i % destinationAirports.length];
+    
+    // Select a UK departure airport (occasionally vary for realism)
+    const ukAirport = ukAirports[i % 3];
+    
+    // Vary departure dates slightly
+    const depDateVariation = new Date(departureDate);
+    depDateVariation.setDate(depDateVariation.getDate() + (i % 14)); // Vary within 2 weeks
+    
+    // Vary return dates for a realistic mix of trip durations
+    const retDateVariation = new Date(depDateVariation);
+    retDateVariation.setDate(retDateVariation.getDate() + 7 + (i % 7)); // 1-2 week trips
+    
+    // Select an airline (vary by route)
+    const airline = airlines[(i + (countryCode.charCodeAt(0) % 5)) % airlines.length];
+    
+    // Generate realistic flight number
+    const flightNumber = `${100 + i + (countryCode.charCodeAt(0) % 900)}`;
+    
+    // Calculate price based on destination and date variations
+    // More expensive for peak dates, more exotic destinations
+    const basePriceMultiplier = Math.min(2, 0.8 + (i % 5) * 0.3); 
+    
+    // Different countries have different base price ranges
+    let basePrice = 150;
+    if (['FR', 'NL', 'BE'].includes(countryCode)) basePrice = 120; // Closer to UK
+    if (['IT', 'ES', 'PT', 'DE'].includes(countryCode)) basePrice = 150;
+    if (['GR', 'HR', 'TR'].includes(countryCode)) basePrice = 180; // Further from UK
+    if (['US', 'CA', 'JP', 'AU'].includes(countryCode)) basePrice = 500; // Long haul
+    
+    const finalPrice = (basePrice * basePriceMultiplier) + (Math.random() * 50);
+    
+    // Different flight durations based on distance
+    let flightDuration = 'PT2H30M'; // Default for Europe
+    if (['FR', 'BE', 'NL'].includes(countryCode)) {
+      flightDuration = 'PT1H45M'; // Shorter flights
+    } else if (['GR', 'TR'].includes(countryCode)) {
+      flightDuration = 'PT4H00M'; // Longer European flights
+    } else if (['US', 'CA', 'JP', 'AU'].includes(countryCode)) {
+      flightDuration = 'PT8H30M'; // Long haul
+    }
+    
+    // Generate departure and return dates with varied times
+    const depTime = new Date(depDateVariation);
+    depTime.setHours(6 + (i % 12), 30 + (i % 30), 0); // Vary departure times
+    
+    const retTime = new Date(retDateVariation);
+    retTime.setHours(10 + (i % 10), 45 + (i % 15), 0); // Vary return times
+    
+    // Create the flight offer
+    mockFlights.push({
+      id: `mock-${countryCode}-${i}-${destinationAirport.code}`,
+      price: {
+        total: finalPrice.toFixed(2),
+        currency: 'GBP'
+      },
+      itineraries: [
+        {
+          segments: [
+            {
+              departure: {
+                iataCode: ukAirport.code,
+                terminal: ukAirport.terminal,
+                at: depTime.toISOString()
+              },
+              arrival: {
+                iataCode: destinationAirport.code,
+                terminal: destinationAirport.terminal,
+                at: new Date(depTime.getTime() + (parseInt(flightDuration.replace(/PT(\d+)H.*/, '$1')) * 60 * 60 * 1000)).toISOString()
+              },
+              carrierCode: airline.code,
+              number: flightNumber,
+              duration: flightDuration
+            }
+          ]
+        },
+        {
+          segments: [
+            {
+              departure: {
+                iataCode: destinationAirport.code,
+                terminal: destinationAirport.terminal,
+                at: retTime.toISOString()
+              },
+              arrival: {
+                iataCode: ukAirport.code,
+                terminal: ukAirport.terminal,
+                at: new Date(retTime.getTime() + (parseInt(flightDuration.replace(/PT(\d+)H.*/, '$1')) * 60 * 60 * 1000)).toISOString()
+              },
+              carrierCode: airline.code,
+              number: (parseInt(flightNumber) + 10).toString(),
+              duration: flightDuration
+            }
+          ]
+        }
+      ]
+    });
+  }
+  
+  // Sort by price for better user experience
+  mockFlights.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+  
+  return mockFlights;
 }
 
 export async function getPopularFlights() {
   // Check if we have valid cached data
   const cachedData = readCache();
   if (cachedData && cachedData.data) {
-    return cachedData.data;
+    // Use 1-hour cache for popular flights
+    if (Date.now() - cachedData.timestamp < CACHE_DURATIONS.POPULAR_FLIGHTS) {
+      console.log('Using cached popular flights data');
+      return cachedData.data;
+    }
   }
   
   try {
-    console.log('Starting flight search with Amadeus API...');
+    console.log('Starting flight search with Amadeus API (direct approach)...');
     
-    // In a production environment with actual API keys, you would use this
-    // Instead of using the complex API, let's use a simpler example that should work with test credentials
-    const response = await amadeus.shopping.flightDestinations.get({
-      origin: 'LON',
-      maxPrice: 200
-    });
-    
-    console.log('API response received:', JSON.stringify(response.data).substring(0, 200) + '...');
-    
-    if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-      console.log('No flight data returned, using mock data');
-      const mockFlights = getMockFlightData();
-      writeCache(mockFlights);
-      return mockFlights;
+    if (!process.env.AMADEUS_CLIENT_ID || !process.env.AMADEUS_CLIENT_SECRET) {
+      console.error('Missing Amadeus API credentials');
+      return createStaticPopularFlights();
     }
     
-    // If we actually got data, we would transform it here
-    // However, since we're using test credentials, we'll return mock data for now
-    const mockFlights = getMockFlightData();
-    writeCache(mockFlights);
-    return mockFlights;
+    // Step 1: Get auth token using direct API call
+    console.log('Fetching Amadeus auth token...');
     
+    const tokenResponse = await fetch('https://api.amadeus.com/v1/security/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'grant_type': 'client_credentials',
+        'client_id': process.env.AMADEUS_CLIENT_ID,
+        'client_secret': process.env.AMADEUS_CLIENT_SECRET
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error('Failed to authenticate with Amadeus API:', tokenData);
+      return createStaticPopularFlights();
+    }
+    
+    // Step 2: Call the flight offers search API for multiple popular destinations
+    console.log('Fetching popular flight destinations...');
+    
+    // Define multiple departure dates to get a more comprehensive view of prices
+    // This provides better options for users while still being efficient with API calls
+    const departureOffsets = [14, 30, 60]; // 2 weeks, 1 month, 2 months ahead
+    const stayDuration = 7; // 1 week stay
+    
+    const today = new Date();
+    
+    // Get formatted dates for different departure times
+    const departureDates = departureOffsets.map(offset => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + offset);
+      return date.toISOString().split('T')[0];
+    });
+    
+    // Expanded list of popular destinations with city names
+    const popularDestinations = [
+      { code: 'CDG', city: 'Paris' },      // Paris
+      { code: 'BCN', city: 'Barcelona' },  // Barcelona
+      { code: 'FCO', city: 'Rome' },       // Rome
+      { code: 'AMS', city: 'Amsterdam' },  // Amsterdam
+      { code: 'LIS', city: 'Lisbon' },     // Lisbon
+      { code: 'ATH', city: 'Athens' },     // Athens
+      { code: 'MAD', city: 'Madrid' },     // Madrid
+      { code: 'DUB', city: 'Dublin' },     // Dublin
+      { code: 'VIE', city: 'Vienna' },     // Vienna
+      { code: 'PRG', city: 'Prague' },     // Prague
+      { code: 'BUD', city: 'Budapest' },   // Budapest
+      { code: 'CPH', city: 'Copenhagen' }  // Copenhagen
+    ];
+    
+    // We'll query each destination with the first departure date
+    // This gives us broad coverage of destinations while managing API usage
+    const destinationPromises = popularDestinations.map(async (destination) => {
+      try {
+        // For each destination, use the first departure date
+        const departureDate = departureDates[0];
+        const returnDate = new Date(new Date(departureDate).setDate(new Date(departureDate).getDate() + stayDuration))
+          .toISOString().split('T')[0];
+        
+        const response = await fetch(
+          `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LON&destinationLocationCode=${destination.code}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=2&currencyCode=GBP`, 
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`
+            }
+          }
+        );
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.data || !data.data.length) {
+          console.log(`No results for ${destination.city} (${destination.code})`);
+          return null;
+        }
+        
+        // Add the city name for display purposes
+        data.data[0].cityName = destination.city;
+        
+        console.log(`Found flights to ${destination.city} for £${data.data[0].price.total}`);
+        return data.data[0]; // Return the first flight offer
+      } catch (err) {
+        console.error(`Error fetching flight to ${destination.code}:`, err);
+        return null;
+      }
+    });
+    
+    // For a few select destinations, get multiple departure dates to show price variety
+    // We'll do this for only 3 top destinations to balance API usage
+    const topDestinations = popularDestinations.slice(0, 3);
+    
+    const multiDatePromises = topDestinations.flatMap(destination => 
+      departureDates.slice(1).map(async (departureDate) => {
+        try {
+          const returnDate = new Date(new Date(departureDate).setDate(new Date(departureDate).getDate() + stayDuration))
+            .toISOString().split('T')[0];
+          
+          const response = await fetch(
+            `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LON&destinationLocationCode=${destination.code}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=1&currencyCode=GBP`, 
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${tokenData.access_token}`
+              }
+            }
+          );
+          
+          const data = await response.json();
+          
+          if (!response.ok || !data.data || !data.data.length) {
+            return null;
+          }
+          
+          // Add the city name and mark as alternative date
+          data.data[0].cityName = destination.city;
+          data.data[0].isAlternativeDate = true;
+          
+          return data.data[0];
+        } catch (err) {
+          return null;
+        }
+      })
+    );
+    
+    // Wait for all requests to complete
+    const [mainResults, altDateResults] = await Promise.all([
+      Promise.all(destinationPromises),
+      Promise.all(multiDatePromises)
+    ]);
+    
+    // Combine and filter out null results
+    let validResults = [...mainResults, ...altDateResults].filter(Boolean);
+    
+    if (validResults.length === 0) {
+      console.log('No flight data returned from API');
+      return createStaticPopularFlights();
+    }
+    
+    // Sort by price for better user experience
+    validResults.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+    
+    // Cache and return the data
+    writeCache(validResults);
+    return validResults;
   } catch (error) {
-    console.error('Error fetching flights from Amadeus:', error);
-    console.log('Using mock flight data instead');
-    // Return mock data on error to ensure UI still works
-    const mockFlights = getMockFlightData();
-    writeCache(mockFlights);
-    return mockFlights;
+    console.error('Error fetching popular flights:', error);
+    
+    // Add more detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorDetails = {
+      message: errorMessage,
+      timestamp: new Date().toISOString(),
+      type: 'popular-flights-error'
+    };
+    
+    console.error('Detailed error:', errorDetails);
+    
+    // Return static data instead of throwing an error
+    return createStaticPopularFlights();
   }
+}
+
+// Create reliable static popular flight data
+function createStaticPopularFlights(): FlightOffer[] {
+  console.log('Creating static popular flight data');
+  
+  // Popular destinations with realistic data
+  const destinations = [
+    { code: 'CDG', city: 'Paris', price: 99, departureOffset: 14, returnOffset: 21 },
+    { code: 'BCN', city: 'Barcelona', price: 119, departureOffset: 21, returnOffset: 28 },
+    { code: 'FCO', city: 'Rome', price: 129, departureOffset: 30, returnOffset: 37 },
+    { code: 'AMS', city: 'Amsterdam', price: 89, departureOffset: 7, returnOffset: 14 },
+    { code: 'LIS', city: 'Lisbon', price: 149, departureOffset: 45, returnOffset: 52 },
+    { code: 'ATH', city: 'Athens', price: 179, departureOffset: 60, returnOffset: 67 },
+    { code: 'MAD', city: 'Madrid', price: 129, departureOffset: 17, returnOffset: 24 },
+    { code: 'DUB', city: 'Dublin', price: 69, departureOffset: 10, returnOffset: 17 },
+    { code: 'VIE', city: 'Vienna', price: 139, departureOffset: 26, returnOffset: 33 },
+    { code: 'PRG', city: 'Prague', price: 110, departureOffset: 35, returnOffset: 42 },
+    { code: 'BUD', city: 'Budapest', price: 129, departureOffset: 40, returnOffset: 47 },
+    { code: 'CPH', city: 'Copenhagen', price: 119, departureOffset: 28, returnOffset: 35 }
+  ];
+  
+  const staticFlights: any[] = destinations.map((dest, index) => {
+    // Calculate future dates
+    const now = new Date();
+    const departureDate = new Date(now);
+    departureDate.setDate(departureDate.getDate() + dest.departureOffset);
+    
+    const returnDate = new Date(now);
+    returnDate.setDate(returnDate.getDate() + dest.returnOffset);
+    
+    // Create a flight that matches our API data structure
+    const flight: any = {
+      id: `static-${dest.code}-${index}`,
+      price: {
+        total: dest.price.toString(),
+        currency: 'GBP'
+      },
+      cityName: dest.city, // Add city name property to match live API data
+      itineraries: [
+        {
+          segments: [
+            {
+              departure: {
+                iataCode: 'LHR',
+                terminal: '5',
+                at: departureDate.toISOString()
+              },
+              arrival: {
+                iataCode: dest.code,
+                at: new Date(departureDate.getTime() + 2 * 60 * 60 * 1000).toISOString()
+              },
+              carrierCode: 'BA',
+              number: `${1000 + index}`,
+              duration: 'PT2H30M'
+            }
+          ]
+        },
+        {
+          segments: [
+            {
+              departure: {
+                iataCode: dest.code,
+                at: returnDate.toISOString()
+              },
+              arrival: {
+                iataCode: 'LHR',
+                terminal: '5',
+                at: new Date(returnDate.getTime() + 2 * 60 * 60 * 1000).toISOString()
+              },
+              carrierCode: 'BA',
+              number: `${2000 + index}`,
+              duration: 'PT2H30M'
+            }
+          ]
+        }
+      ]
+    };
+    
+    // Add some variation by using different airlines for some flights
+    if (index % 3 === 1) {
+      flight.itineraries[0].segments[0].carrierCode = 'LH';
+      flight.itineraries[1].segments[0].carrierCode = 'LH';
+    } else if (index % 3 === 2) {
+      flight.itineraries[0].segments[0].carrierCode = 'AF';
+      flight.itineraries[1].segments[0].carrierCode = 'AF';
+    }
+    
+    return flight;
+  });
+  
+  return staticFlights;
+}
+
+// Create mock popular destinations
+function createMockPopularFlights(): any[] {
+  // Popular European destinations
+  const popularDestinations = [
+    { city: 'Paris', code: 'CDG', country: 'France', price: 89 },
+    { city: 'Barcelona', code: 'BCN', country: 'Spain', price: 99 },
+    { city: 'Rome', code: 'FCO', country: 'Italy', price: 120 },
+    { city: 'Amsterdam', code: 'AMS', country: 'Netherlands', price: 79 },
+    { city: 'Lisbon', code: 'LIS', country: 'Portugal', price: 129 },
+    { city: 'Athens', code: 'ATH', country: 'Greece', price: 150 },
+    { city: 'Berlin', code: 'BER', country: 'Germany', price: 89 },
+    { city: 'Dublin', code: 'DUB', country: 'Ireland', price: 69 },
+    { city: 'Prague', code: 'PRG', country: 'Czech Republic', price: 110 },
+    { city: 'Vienna', code: 'VIE', country: 'Austria', price: 130 }
+  ];
+
+  // Create mock data in the format expected by the frontend
+  const mockData = popularDestinations.map((dest, index) => {
+    // Calculate random dates within the next 3 months
+    const departureDate = new Date();
+    departureDate.setDate(departureDate.getDate() + 7 + Math.floor(Math.random() * 80));
+    
+    const returnDate = new Date(departureDate);
+    returnDate.setDate(returnDate.getDate() + 3 + Math.floor(Math.random() * 7));
+    
+    // Format dates as YYYY-MM-DD
+    const formatDate = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+    
+    return {
+      type: 'flight-destination',
+      origin: 'LON',
+      destination: dest.code,
+      departureDate: formatDate(departureDate),
+      returnDate: formatDate(returnDate),
+      price: {
+        total: dest.price.toString()
+      },
+      links: {
+        flightDates: `/flights/dates?origin=LON&destination=${dest.code}`,
+        flightOffers: `/flights?origin=LON&destination=${dest.code}&departureDate=${formatDate(departureDate)}&returnDate=${formatDate(returnDate)}&adults=1&nonStop=false`
+      }
+    };
+  });
+  
+  return mockData;
 }
 
 export async function getFlightsToCountry(countryCode: string) {
-  // Check cache first - we could implement per-country caching here
-  // but for now we'll just return mock data that's specific to each country
+  // Check country-specific cache first
+  const cachedData = readCountryCache(countryCode);
+  if (cachedData && cachedData.data) {
+    // Use 12-hour cache for country flights
+    if (Date.now() - cachedData.timestamp < CACHE_DURATIONS.COUNTRY_FLIGHTS) {
+      console.log(`Using cached flight data for ${countryCode}`);
+      return cachedData.data;
+    }
+  }
+  
   try {
     console.log(`Fetching flights to ${countryCode}...`);
     
-    // In a production environment with actual API keys:
-    // We would use the Amadeus Flight Destinations API to get destinations
-    // in the specified country, then perhaps the Flight Offers Search API
-    // to get pricing for those specific routes
+    // In a production environment:
+    // Instead of querying just one city, we'll fetch multiple key destinations for the country
+    // This provides more comprehensive results while still being efficient with API usage
+    const countryCities: {[key: string]: string[]} = {
+      'FR': ['CDG', 'NCE', 'LYS'], // Paris, Nice, Lyon
+      'IT': ['FCO', 'MXP', 'VCE'], // Rome, Milan, Venice
+      'ES': ['MAD', 'BCN', 'AGP'], // Madrid, Barcelona, Malaga
+      'GR': ['ATH', 'JTR', 'HER'], // Athens, Santorini, Heraklion
+      'DE': ['FRA', 'MUC', 'TXL'], // Frankfurt, Munich, Berlin
+      'US': ['JFK', 'LAX', 'MIA'], // New York, Los Angeles, Miami
+      'GB': ['LHR', 'MAN', 'EDI'], // London, Manchester, Edinburgh
+      'PT': ['LIS', 'OPO', 'FAO'], // Lisbon, Porto, Faro
+      'HR': ['ZAG', 'DBV', 'SPU'], // Zagreb, Dubrovnik, Split
+      'TR': ['IST', 'AYT', 'ADB'], // Istanbul, Antalya, Izmir
+      'NL': ['AMS'], // Amsterdam
+      'BE': ['BRU'], // Brussels
+      'AT': ['VIE'], // Vienna
+      'CH': ['ZRH'], // Zurich
+      'CA': ['YYZ', 'YVR'], // Toronto, Vancouver
+      'AU': ['SYD', 'MEL'], // Sydney, Melbourne
+      'JP': ['NRT', 'KIX'], // Tokyo, Osaka
+      'SG': ['SIN'], // Singapore
+      'AE': ['DXB'], // Dubai
+    };
     
-    // For the mock version, we'll return customized mock data per country
-    return getMockFlightsForCountry(countryCode);
+    // Get the airports for this country
+    const destinationAirports = countryCities[countryCode.toUpperCase()] || [];
     
+    if (!destinationAirports.length) {
+      console.error(`No airports defined for country code: ${countryCode}`);
+      
+      // Generate mock data instead of throwing an error
+      console.log(`Generating mock data for ${countryCode}`);
+      const mockFlights = createMockFlightsForCountry(countryCode);
+      
+      // Cache the mock data
+      writeCountryCache(countryCode, mockFlights);
+      return mockFlights;
+    }
+    
+    // Use future dates for flight search
+    const departureDate = getFutureDateString();
+    const returnDate = getFutureDateString(7);
+    
+    if (!process.env.AMADEUS_CLIENT_ID || !process.env.AMADEUS_CLIENT_SECRET) {
+      console.error('Missing Amadeus API credentials');
+      // Use mock data as fallback
+      const mockFlights = createMockFlightsForCountry(countryCode);
+      writeCountryCache(countryCode, mockFlights);
+      return mockFlights;
+    }
+    
+    // Step 1: Get auth token using direct API call
+    console.log('Fetching Amadeus auth token...');
+    const tokenResponse = await fetch('https://api.amadeus.com/v1/security/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'grant_type': 'client_credentials',
+        'client_id': process.env.AMADEUS_CLIENT_ID,
+        'client_secret': process.env.AMADEUS_CLIENT_SECRET
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error('Failed to authenticate with Amadeus API:', tokenData);
+      const mockFlights = createMockFlightsForCountry(countryCode);
+      writeCountryCache(countryCode, mockFlights);
+      return mockFlights;
+    }
+    
+    // Step 2: Call the flight offers search API for multiple destinations
+    // To balance API usage, we'll fetch data for up to 3 destinations and 
+    // limit results per destination
+    console.log(`Fetching flights to ${countryCode} destinations...`);
+    
+    // Number of results to fetch per destination (3-5 is reasonable to keep API usage in check)
+    const RESULTS_PER_DESTINATION = 4;
+    
+    // We'll use Promise.all to run queries in parallel
+    const destinationPromises = destinationAirports.slice(0, 3).map(async (airportCode) => {
+      try {
+        const flightResponse = await fetch(
+          `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LHR&destinationLocationCode=${airportCode}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=${RESULTS_PER_DESTINATION}&currencyCode=GBP`, 
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`
+            }
+          }
+        );
+        
+        if (!flightResponse.ok) {
+          console.log(`Error fetching flights to ${airportCode}, status: ${flightResponse.status}`);
+          return [];
+        }
+        
+        const flightData = await flightResponse.json();
+        
+        if (!flightData.data || !Array.isArray(flightData.data)) {
+          console.log(`No flight data returned for ${airportCode}`);
+          return [];
+        }
+        
+        console.log(`Found ${flightData.data.length} flights to ${airportCode}`);
+        return flightData.data;
+      } catch (err) {
+        console.error(`Error fetching flights to ${airportCode}:`, err);
+        return [];
+      }
+    });
+    
+    // Combine all results
+    const results = await Promise.all(destinationPromises);
+    const allFlights = results.flat();
+    
+    if (allFlights.length === 0) {
+      console.log(`No flights found for any destination in ${countryCode}`);
+      
+      // Use mock data as fallback
+      console.log(`Using mock data fallback for ${countryCode}`);
+      const mockFlights = createMockFlightsForCountry(countryCode);
+      
+      // Cache the mock data
+      writeCountryCache(countryCode, mockFlights);
+      return mockFlights;
+    }
+    
+    // Sort flights by price for better user experience
+    allFlights.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+    
+    // Cache and return the data
+    writeCountryCache(countryCode, allFlights);
+    return allFlights;
   } catch (error) {
     console.error(`Error fetching flights to ${countryCode}:`, error);
-    console.log('Using mock flight data for country');
-    // Return mock data for the country
-    return getMockFlightsForCountry(countryCode);
+    
+    // Fallback to mock data in case of API errors
+    console.log(`Falling back to mock data for ${countryCode} due to API error`);
+    const mockFlights = createMockFlightsForCountry(countryCode);
+    
+    // Cache the mock data
+    writeCountryCache(countryCode, mockFlights);
+    return mockFlights;
   }
 }
 
-function getMockFlightsForCountry(countryCode: string): FlightOffer[] {
-  const departureDate = getFutureDateString();
-  const returnDate = getFutureDateString(37);
+// Search for flights with specific parameters
+export async function searchFlights(params: any) {
+  const cacheKey = `search-${params.originLocationCode}-${params.destinationLocationCode}-${params.departureDate}-${params.returnDate}-${params.adults}-${params.children || '0'}`;
+  const cacheFile = path.join(process.cwd(), 'public', 'cache', `${cacheKey}.json`);
   
-  // Standard mock flight template
-  const createMockFlight = (
-    id: string, 
-    price: string,
-    departureIata: string = 'LHR',
-    departureTerminal: string = '5',
-    arrivalIata: string,
-    arrivalTerminal: string,
-    departureTime: string,
-    arrivalTime: string,
-    returnDepartureTime: string,
-    returnArrivalTime: string,
-    carrier: string,
-    outboundNumber: string,
-    returnNumber: string,
-    outboundDuration: string,
-    returnDuration: string
-  ): FlightOffer => ({
-    id,
-    price: {
-      total: price,
-      currency: 'GBP'
-    },
-    itineraries: [
-      {
-        segments: [
-          {
-            departure: {
-              iataCode: departureIata,
-              terminal: departureTerminal,
-              at: `${departureDate}T${departureTime}`
-            },
-            arrival: {
-              iataCode: arrivalIata,
-              terminal: arrivalTerminal,
-              at: `${departureDate}T${arrivalTime}`
-            },
-            carrierCode: carrier,
-            number: outboundNumber,
-            duration: outboundDuration
-          }
-        ]
-      },
-      {
-        segments: [
-          {
-            departure: {
-              iataCode: arrivalIata,
-              terminal: arrivalTerminal,
-              at: `${returnDate}T${returnDepartureTime}`
-            },
-            arrival: {
-              iataCode: departureIata,
-              terminal: departureTerminal,
-              at: `${returnDate}T${returnArrivalTime}`
-            },
-            carrierCode: carrier,
-            number: returnNumber,
-            duration: returnDuration
-          }
-        ]
+  // Check for cached results
+  if (fs.existsSync(cacheFile)) {
+    try {
+      const data = fs.readFileSync(cacheFile, 'utf8');
+      const cache = JSON.parse(data);
+      
+      // Use 6-hour cache for specific searches
+      if (cache.timestamp && (Date.now() - cache.timestamp < CACHE_DURATIONS.FLIGHT_SEARCH)) {
+        console.log(`Using cached search results for ${cacheKey}`);
+        return cache.data;
       }
-    ]
-  });
+    } catch (error) {
+      console.error('Error reading search cache:', error);
+    }
+  }
+  
+  try {
+    console.log('Executing flight search with parameters:', JSON.stringify(params));
+    
+    // Validate important parameters
+    if (!params.originLocationCode || !params.destinationLocationCode || !params.departureDate) {
+      console.error('Missing required parameters for flight search');
+      throw new Error('Missing required flight search parameters');
+    }
+    
+    // Ensure IATA codes are valid format (3 letters)
+    const originCode = params.originLocationCode.toUpperCase().trim();
+    const destCode = params.destinationLocationCode.toUpperCase().trim();
+    
+    if (!/^[A-Z]{3}$/.test(originCode) || !/^[A-Z]{3}$/.test(destCode)) {
+      console.error('Invalid airport codes:', originCode, destCode);
+      throw new Error('Invalid airport codes provided');
+    }
+    
+    // Step 1: Get auth token using direct API call
+    console.log('Fetching Amadeus auth token...');
+    
+    if (!process.env.AMADEUS_CLIENT_ID || !process.env.AMADEUS_CLIENT_SECRET) {
+      console.error('Missing Amadeus API credentials');
+      throw new Error('Failed to authenticate with Amadeus API: Missing credentials');
+    }
+    
+    const tokenResponse = await fetch('https://api.amadeus.com/v1/security/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'grant_type': 'client_credentials',
+        'client_id': process.env.AMADEUS_CLIENT_ID,
+        'client_secret': process.env.AMADEUS_CLIENT_SECRET
+      })
+    });
+    
+    const tokenData = await tokenResponse.json();
+    
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error('Failed to authenticate with Amadeus API:', tokenData);
+      throw new Error('Failed to authenticate with Amadeus API');
+    }
+    
+    // Step 2: Prepare search parameters for main search and alternative dates search
+    console.log('Building flight search URL...');
+    const searchParams = new URLSearchParams({
+      originLocationCode: originCode,
+      destinationLocationCode: destCode,
+      departureDate: params.departureDate,
+      adults: params.adults || '1',
+      currencyCode: 'GBP',
+      max: (MAX_FLIGHT_RESULTS * 1.5).toString() // Increase the maximum results to provide more choices
+    });
+    
+    // Add optional parameters if present
+    if (params.returnDate) searchParams.append('returnDate', params.returnDate);
+    if (params.children) searchParams.append('children', params.children);
+    if (params.travelClass) searchParams.append('travelClass', params.travelClass);
+    if (params.nonStop !== undefined) searchParams.append('nonStop', params.nonStop.toString());
+    
+    // Step 3: Call the flight offers search API
+    console.log('Fetching flight offers...');
+    const flightResponse = await fetch(
+      `https://api.amadeus.com/v2/shopping/flight-offers?${searchParams.toString()}`, 
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`
+        }
+      }
+    );
+    
+    const flightData = await flightResponse.json();
+    
+    if (!flightResponse.ok) {
+      console.error('Error from flight offers API:', flightData);
+      throw new Error('Error from flight offers API: ' + (flightData.errors?.[0]?.detail || 'Unknown error'));
+    }
+    
+    if (!flightData.data || !Array.isArray(flightData.data) || flightData.data.length === 0) {
+      console.log('No search results returned from API');
+      throw new Error('No flights found for the specified route');
+    }
+    
+    let allFlights = flightData.data;
+    
+    // Step 4: Optionally fetch alternative dates (±1 day) if the main search didn't return enough results
+    // This gives more options without consuming too many API calls
+    if (allFlights.length < 6 && params.returnDate) {
+      console.log('Limited results found, fetching alternative dates...');
+      
+      try {
+        // Create a date +1 day from the original
+        const altDepartureDate = new Date(params.departureDate);
+        altDepartureDate.setDate(altDepartureDate.getDate() + 1);
+        const altDepartureDateStr = altDepartureDate.toISOString().split('T')[0];
+        
+        // Alternative date search params
+        const altSearchParams = new URLSearchParams({
+          originLocationCode: originCode,
+          destinationLocationCode: destCode,
+          departureDate: altDepartureDateStr,
+          adults: params.adults || '1',
+          currencyCode: 'GBP',
+          max: '6' // Limit the number of alternative date results
+        });
+        
+        if (params.returnDate) {
+          // Also adjust return date
+          const altReturnDate = new Date(params.returnDate);
+          altReturnDate.setDate(altReturnDate.getDate() + 1);
+          altSearchParams.append('returnDate', altReturnDate.toISOString().split('T')[0]);
+        }
+        
+        // Optional parameters
+        if (params.children) altSearchParams.append('children', params.children);
+        if (params.travelClass) altSearchParams.append('travelClass', params.travelClass);
+        if (params.nonStop !== undefined) altSearchParams.append('nonStop', params.nonStop.toString());
+        
+        // Execute alternative date search
+        const altFlightResponse = await fetch(
+          `https://api.amadeus.com/v2/shopping/flight-offers?${altSearchParams.toString()}`, 
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`
+            }
+          }
+        );
+        
+        if (altFlightResponse.ok) {
+          const altFlightData = await altFlightResponse.json();
+          
+          if (altFlightData.data && Array.isArray(altFlightData.data) && altFlightData.data.length > 0) {
+            console.log(`Found ${altFlightData.data.length} flights for alternative dates`);
+            
+            // Mark these flights as alternative date options
+            altFlightData.data.forEach((flight: any) => {
+              flight.isAlternativeDate = true;
+            });
+            
+            // Combine with main results
+            allFlights = [...allFlights, ...altFlightData.data];
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching alternative dates, continuing with main results:', err);
+      }
+    }
+    
+    // Sort flights by price for better user experience
+    allFlights.sort((a: any, b: any) => parseFloat(a.price.total) - parseFloat(b.price.total));
+    
+    // Cache the results
+    try {
+      ensureCacheDirectory();
+      const cache = {
+        timestamp: Date.now(),
+        data: allFlights
+      };
+      fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+      console.log(`Search results cached as ${cacheKey}`);
+    } catch (error) {
+      console.error('Error caching search results:', error);
+    }
+    
+    return allFlights;
+  } catch (error) {
+    console.error('Error searching flights:', error);
+    throw error; // Propagate the error instead of falling back to mock data
+  }
+}
 
-  // Default flights (used if no country match)
-  const defaultFlights = [
-    createMockFlight('default-1', '350.00', 'LHR', '5', 'CDG', '2E', '09:30:00', '11:55:00', '12:30:00', '13:55:00', 'BA', '306', '309', 'PT1H25M', 'PT1H25M'),
-    createMockFlight('default-2', '290.00', 'LHR', '2', 'AMS', '1', '07:15:00', '09:35:00', '17:45:00', '19:05:00', 'KL', '1781', '1180', 'PT1H20M', 'PT1H20M')
+// Create mock flights between specific airports
+function createMockFlightsWithRoute(
+  originCode: string, 
+  destinationCode: string, 
+  departureDate: string,
+  returnDate: string
+): FlightOffer[] {
+  // Map some common airports to their display info
+  const airportInfo: Record<string, {city: string, country: string, terminal: string}> = {
+    // UK
+    'LHR': {city: 'London', country: 'United Kingdom', terminal: '5'},
+    'LGW': {city: 'London', country: 'United Kingdom', terminal: '1'},
+    'MAN': {city: 'Manchester', country: 'United Kingdom', terminal: '1'},
+    'EDI': {city: 'Edinburgh', country: 'United Kingdom', terminal: '1'},
+    // France
+    'CDG': {city: 'Paris', country: 'France', terminal: '2E'},
+    'ORY': {city: 'Paris', country: 'France', terminal: '1'},
+    'NCE': {city: 'Nice', country: 'France', terminal: '1'},
+    // Spain
+    'MAD': {city: 'Madrid', country: 'Spain', terminal: '4'},
+    'BCN': {city: 'Barcelona', country: 'Spain', terminal: '1'},
+    'AGP': {city: 'Malaga', country: 'Spain', terminal: '3'},
+    // Italy
+    'FCO': {city: 'Rome', country: 'Italy', terminal: '3'},
+    'MXP': {city: 'Milan', country: 'Italy', terminal: '1'},
+    'VCE': {city: 'Venice', country: 'Italy', terminal: '1'},
+    // Greece
+    'ATH': {city: 'Athens', country: 'Greece', terminal: '2'},
+    'HER': {city: 'Heraklion', country: 'Greece', terminal: '1'},
+    'SKG': {city: 'Thessaloniki', country: 'Greece', terminal: '1'},
+    // Germany
+    'FRA': {city: 'Frankfurt', country: 'Germany', terminal: '1'},
+    'MUC': {city: 'Munich', country: 'Germany', terminal: '2'},
+    'TXL': {city: 'Berlin', country: 'Germany', terminal: '1'},
+    // Default for unknown airports
+    'XXX': {city: 'Unknown', country: 'Unknown', terminal: '1'},
+  };
+  
+  // Get airport info with fallbacks
+  const origin = airportInfo[originCode] || {city: 'Unknown', country: 'Unknown', terminal: '1'};
+  const destination = airportInfo[destinationCode] || {city: 'Unknown', country: 'Unknown', terminal: '1'};
+  
+  // Calculate approximate flight duration based on airport locations (very rough approximation)
+  // For demonstration, we'll categorize flights into short, medium and long haul
+  let flightDuration = 'PT2H30M'; // Default medium-haul duration
+  
+  // European short-haul (default)
+  if (
+    (originCode.startsWith('L') && destinationCode.startsWith('L')) ||
+    ['CDG', 'ORY', 'BRU', 'AMS', 'LUX', 'DUB'].includes(destinationCode)
+  ) {
+    flightDuration = 'PT1H45M'; // Short haul
+  } else if (
+    ['JFK', 'LAX', 'MIA', 'YYZ', 'DXB', 'DOH', 'SIN', 'HKG', 'NRT', 'SYD'].includes(destinationCode)
+  ) {
+    flightDuration = 'PT8H30M'; // Long haul
+  }
+  
+  // Create mock flight offers
+  const mockFlights: FlightOffer[] = [];
+  
+  // Create different airlines for variety
+  const airlines = [
+    {code: 'BA', name: 'British Airways'},
+    {code: 'LH', name: 'Lufthansa'},
+    {code: 'AF', name: 'Air France'},
+    {code: 'EZ', name: 'EasyJet'},
+    {code: 'FR', name: 'Ryanair'}
   ];
+  
+  // Create 5 mock flights with different prices and times
+  for (let i = 1; i <= 5; i++) {
+    const basePrice = 200 + (i * 75) + (Math.random() * 50); // Different price tiers with small random variation
+    const hourOffset = i * 2; // Different departure times
+    const airline = airlines[i % airlines.length];
+    
+    // Generate departure and return dates with time
+    const depTime = new Date(departureDate);
+    depTime.setHours(6 + hourOffset, 30, 0);
+    
+    const retTime = new Date(returnDate);
+    retTime.setHours(10 + hourOffset, 45, 0);
+    
+    mockFlights.push({
+      id: `mock-${originCode}-${destinationCode}-${i}`,
+      price: {
+        total: basePrice.toFixed(2),
+        currency: 'GBP'
+      },
+      itineraries: [
+        {
+          segments: [
+            {
+              departure: {
+                iataCode: originCode,
+                terminal: origin.terminal,
+                at: depTime.toISOString()
+              },
+              arrival: {
+                iataCode: destinationCode,
+                terminal: destination.terminal,
+                at: new Date(depTime.getTime() + 3 * 60 * 60 * 1000).toISOString() // Rough flight time
+              },
+              carrierCode: airline.code,
+              number: `${100 + i}`,
+              duration: flightDuration
+            }
+          ]
+        },
+        {
+          segments: [
+            {
+              departure: {
+                iataCode: destinationCode,
+                terminal: destination.terminal,
+                at: retTime.toISOString()
+              },
+              arrival: {
+                iataCode: originCode,
+                terminal: origin.terminal,
+                at: new Date(retTime.getTime() + 3 * 60 * 60 * 1000).toISOString() // Rough flight time 
+              },
+              carrierCode: airline.code,
+              number: `${200 + i}`,
+              duration: flightDuration
+            }
+          ]
+        }
+      ]
+    });
+  }
+  
+  return mockFlights;
+}
 
-  // Country-specific mock flights
-  switch(countryCode.toUpperCase()) {
-    case 'FR':
-      return [
-        createMockFlight('fr-1', '320.00', 'LHR', '5', 'CDG', '2E', '08:30:00', '10:55:00', '11:30:00', '12:55:00', 'BA', '306', '309', 'PT1H25M', 'PT1H25M'),
-        createMockFlight('fr-2', '276.00', 'LHR', '2', 'CDG', '1', '07:15:00', '09:35:00', '17:45:00', '19:05:00', 'AF', '1781', '1180', 'PT1H20M', 'PT1H20M'),
-        createMockFlight('fr-3', '189.00', 'LGW', '1', 'ORY', '2', '10:15:00', '12:35:00', '14:45:00', '16:05:00', 'VY', '8745', '8746', 'PT1H20M', 'PT1H20M'),
-        createMockFlight('fr-4', '350.00', 'LHR', '5', 'NCE', '2', '09:30:00', '12:35:00', '13:30:00', '14:45:00', 'BA', '344', '345', 'PT2H05M', 'PT2H15M'),
-        createMockFlight('fr-5', '410.00', 'LHR', '5', 'TLS', '1', '11:30:00', '14:20:00', '15:30:00', '16:35:00', 'BA', '374', '375', 'PT1H50M', 'PT2H05M')
-      ];
+// Export functions for cache management
+export function getCacheStats() {
+  const cacheDir = path.join(process.cwd(), 'public', 'cache');
+  const stats = {
+    cacheFiles: 0,
+    totalSize: 0,
+    oldestCache: Date.now(),
+    newestCache: 0,
+    files: [] as {name: string, size: number, date: number}[]
+  };
+  
+  if (!fs.existsSync(cacheDir)) {
+    return stats;
+  }
+  
+  try {
+    const files = fs.readdirSync(cacheDir, { withFileTypes: true });
+    
+    for (const file of files) {
+      if (file.isDirectory() && file.name === 'countries') {
+        // Handle country cache directory
+        const countryFiles = fs.readdirSync(path.join(cacheDir, 'countries'), { withFileTypes: true });
+        for (const countryFile of countryFiles) {
+          if (countryFile.isFile() && countryFile.name.endsWith('.json')) {
+            const filePath = path.join(cacheDir, 'countries', countryFile.name);
+            const stat = fs.statSync(filePath);
+            stats.cacheFiles++;
+            stats.totalSize += stat.size;
+            stats.oldestCache = Math.min(stats.oldestCache, stat.mtimeMs);
+            stats.newestCache = Math.max(stats.newestCache, stat.mtimeMs);
+            stats.files.push({
+              name: `countries/${countryFile.name}`,
+              size: stat.size,
+              date: stat.mtimeMs
+            });
+          }
+        }
+      } else if (file.isFile() && file.name.endsWith('.json')) {
+        const filePath = path.join(cacheDir, file.name);
+        const stat = fs.statSync(filePath);
+        stats.cacheFiles++;
+        stats.totalSize += stat.size;
+        stats.oldestCache = Math.min(stats.oldestCache, stat.mtimeMs);
+        stats.newestCache = Math.max(stats.newestCache, stat.mtimeMs);
+        stats.files.push({
+          name: file.name,
+          size: stat.size,
+          date: stat.mtimeMs
+        });
+      }
+    }
+    
+    return stats;
+  } catch (error) {
+    console.error('Error getting cache stats:', error);
+    return stats;
+  }
+}
+
+export function clearCache(all: boolean = false, days: number = 7) {
+  const cacheDir = path.join(process.cwd(), 'public', 'cache');
+  const cutoffDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+  let deletedCount = 0;
+  
+  if (!fs.existsSync(cacheDir)) {
+    return { deletedCount };
+  }
+  
+  try {
+    const clearFile = (filePath: string) => {
+      if (all) {
+        fs.unlinkSync(filePath);
+        deletedCount++;
+        return;
+      }
       
-    case 'IT':
-      return [
-        createMockFlight('it-1', '420.00', 'LHR', '5', 'FCO', '1', '08:30:00', '12:05:00', '13:30:00', '15:25:00', 'BA', '548', '549', 'PT2H35M', 'PT2H55M'),
-        createMockFlight('it-2', '380.00', 'LGW', '1', 'MXP', '1', '07:15:00', '10:25:00', '11:45:00', '12:55:00', 'EZY', '8193', '8194', 'PT2H10M', 'PT2H10M'),
-        createMockFlight('it-3', '450.00', 'LHR', '2', 'VCE', '1', '10:15:00', '13:35:00', '14:45:00', '16:15:00', 'IB', '3245', '3246', 'PT2H20M', 'PT2H30M')
-      ];
-      
-    case 'ES':
-      return [
-        createMockFlight('es-1', '310.00', 'LHR', '5', 'MAD', '4', '08:30:00', '11:55:00', '12:30:00', '14:05:00', 'IB', '3167', '3168', 'PT2H25M', 'PT2H35M'),
-        createMockFlight('es-2', '265.00', 'LGW', '1', 'BCN', '2', '07:15:00', '10:35:00', '11:45:00', '13:05:00', 'VY', '7822', '7823', 'PT2H20M', 'PT2H20M'),
-        createMockFlight('es-3', '220.00', 'STN', '1', 'AGP', '3', '10:15:00', '14:05:00', '15:45:00', '17:45:00', 'FR', '8164', '8165', 'PT2H50M', 'PT3H00M')
-      ];
-      
-    case 'GR':
-      return [
-        createMockFlight('gr-1', '450.00', 'LHR', '5', 'ATH', '2', '09:30:00', '15:05:00', '16:30:00', '18:25:00', 'BA', '632', '633', 'PT3H35M', 'PT3H55M'),
-        createMockFlight('gr-2', '380.00', 'LGW', '1', 'HER', '1', '08:15:00', '14:05:00', '15:45:00', '17:55:00', 'EZY', '8753', '8754', 'PT3H50M', 'PT4H10M'),
-      ];
-      
-    default:
-      return defaultFlights;
+      const stat = fs.statSync(filePath);
+      if (stat.mtimeMs < cutoffDate) {
+        fs.unlinkSync(filePath);
+        deletedCount++;
+      }
+    };
+    
+    const files = fs.readdirSync(cacheDir, { withFileTypes: true });
+    
+    for (const file of files) {
+      if (file.isDirectory() && file.name === 'countries') {
+        // Handle country cache directory
+        const countryFiles = fs.readdirSync(path.join(cacheDir, 'countries'), { withFileTypes: true });
+        for (const countryFile of countryFiles) {
+          if (countryFile.isFile() && countryFile.name.endsWith('.json')) {
+            clearFile(path.join(cacheDir, 'countries', countryFile.name));
+          }
+        }
+      } else if (file.isFile() && file.name.endsWith('.json')) {
+        clearFile(path.join(cacheDir, file.name));
+      }
+    }
+    
+    return { deletedCount };
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    return { deletedCount, error: String(error) };
   }
 } 

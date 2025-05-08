@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plane, Clock, Info, MapPin, Calendar, ArrowRight, Sun, Sparkles, Check } from 'lucide-react';
 import { FlightOffer } from '@/lib/amadeus';
 import FlightSearchForm from '@/components/FlightSearchForm';
+import { formatAirportDisplay, formatRouteDisplay, getAirportByCode } from '@/data/airports';
 
 // Popular destinations in Italy
 const popularDestinations = [
@@ -233,13 +234,17 @@ export default function ItalyPage() {
                 const outboundDateTime = formatDateTime(outbound.departure.at);
                 const arrivalDateTime = formatDateTime(outbound.arrival.at);
                 
+                // Get origin and destination cities if available
+                const originAirport = getAirportByCode(outbound.departure.iataCode);
+                const destinationAirport = getAirportByCode(outbound.arrival.iataCode);
+                
                 return (
                   <Card key={flight.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     <div className="p-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                         <div>
                           <h3 className="text-xl font-bold text-gray-900">
-                            {getAirportName(outbound.departure.iataCode)} to {getAirportName(outbound.arrival.iataCode)}
+                            {formatRouteDisplay(outbound.departure.iataCode, outbound.arrival.iataCode)}
                           </h3>
                           <p className="text-gray-600">
                             {getAirlineName(outbound.carrierCode)} • Round Trip
@@ -251,73 +256,76 @@ export default function ItalyPage() {
                         </div>
                       </div>
                       
-                      <div className="grid md:grid-cols-5 gap-4 py-4 border-t border-b border-gray-100">
-                        <div className="md:col-span-2">
-                          <p className="text-xs text-gray-500 mb-1">Outbound</p>
-                          <div className="flex items-center mb-2">
-                            <span className="text-xl font-bold text-gray-800">{outboundDateTime.time}</span>
-                            <ArrowRight className="mx-2 text-gray-400 h-4 w-4" />
-                            <span className="text-xl font-bold text-gray-800">{arrivalDateTime.time}</span>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-50 mr-3">
+                            <Plane className="h-5 w-5 text-blue-600" />
                           </div>
-                          <div className="flex items-start">
-                            <div className="mr-6">
-                              <p className="text-sm font-medium text-gray-900">{outbound.departure.iataCode}</p>
-                              <p className="text-xs text-gray-500">{outboundDateTime.date}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{outbound.arrival.iataCode}</p>
-                              <p className="text-xs text-gray-500">{arrivalDateTime.date}</p>
-                            </div>
+                          <div>
+                            <div className="text-sm text-gray-500">Departure</div>
+                            <div className="font-medium">{outboundDateTime.date} • {outboundDateTime.time}</div>
+                            <div className="text-sm">{formatAirportDisplay(outbound.departure.iataCode)}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-50 mr-3">
+                            <MapPin className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-500">Arrival</div>
+                            <div className="font-medium">{arrivalDateTime.date} • {arrivalDateTime.time}</div>
+                            <div className="text-sm">{formatAirportDisplay(outbound.arrival.iataCode)}</div>
                           </div>
                         </div>
                         
                         {returnFlight && (
-                          <div className="md:col-span-2">
-                            <p className="text-xs text-gray-500 mb-1">Return</p>
-                            <div className="flex items-center mb-2">
-                              <span className="text-xl font-bold text-gray-800">{formatDateTime(returnFlight.departure.at).time}</span>
-                              <ArrowRight className="mx-2 text-gray-400 h-4 w-4" />
-                              <span className="text-xl font-bold text-gray-800">{formatDateTime(returnFlight.arrival.at).time}</span>
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-50 mr-3">
+                              <Calendar className="h-5 w-5 text-blue-600" />
                             </div>
-                            <div className="flex items-start">
-                              <div className="mr-6">
-                                <p className="text-sm font-medium text-gray-900">{returnFlight.departure.iataCode}</p>
-                                <p className="text-xs text-gray-500">{formatDateTime(returnFlight.departure.at).date}</p>
+                            <div>
+                              <div className="text-sm text-gray-500">Return</div>
+                              <div className="font-medium">
+                                {formatDateTime(returnFlight.departure.at).date}
                               </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">{returnFlight.arrival.iataCode}</p>
-                                <p className="text-xs text-gray-500">{formatDateTime(returnFlight.arrival.at).date}</p>
+                              <div className="text-sm">
+                                {formatAirportDisplay(returnFlight.departure.iataCode)} to {formatAirportDisplay(returnFlight.arrival.iataCode)}
                               </div>
                             </div>
                           </div>
                         )}
-                        
-                        <div className="md:col-span-1 flex flex-col justify-center">
-                          <Button className="bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={() => {
-                              // Create URL params for enquiry
-                              const queryParams = new URLSearchParams({
-                                originCity: getAirportName(outbound.departure.iataCode),
-                                destinationCity: getAirportName(outbound.arrival.iataCode),
-                                departureDate: outbound.departure.at,
-                                returnDate: returnFlight?.departure.at || '',
-                                price: flight.price.total,
-                                airline: outbound.carrierCode,
-                                flightNumber: outbound.number
-                              });
-                              
-                              router.push(`/enquire?${queryParams.toString()}`);
-                            }}
-                          >
-                            Book This Flight
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end">
+                        <Button 
+                          asChild
+                          variant="outline"
+                          className="mr-3 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                        >
+                          <Link href={`/flights/${flight.id}`}>
+                            View Details
+                          </Link>
+                        </Button>
+                        <Button asChild>
+                          <Link href="/enquire">
+                            Enquire Now
+                          </Link>
+                        </Button>
                       </div>
                     </div>
                   </Card>
                 );
               })}
+              
+              {flights.length === 0 && !loading && !error && (
+                <div className="text-center py-12">
+                  <div className="inline-block p-4 rounded-full bg-gray-100">
+                    <Info className="h-8 w-8 text-gray-500" />
+                  </div>
+                  <p className="mt-4 text-gray-600">No flights available at the moment. Please try again later.</p>
+                </div>
+              )}
             </div>
           )}
         </div>

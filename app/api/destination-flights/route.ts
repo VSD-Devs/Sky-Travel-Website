@@ -1,13 +1,83 @@
 import { NextResponse } from 'next/server';
-import { getMockFlightData } from '@/lib/amadeus';
 import Amadeus from 'amadeus';
+import fs from 'fs';
+import path from 'path';
 
-// Initialize Amadeus client with test environment
+// Initialize Amadeus client with production environment
 const amadeus = new Amadeus({
   clientId: process.env.AMADEUS_CLIENT_ID,
-  clientSecret: process.env.AMADEUS_CLIENT_SECRET,
-  hostname: 'test.api.amadeus.com'
+  clientSecret: process.env.AMADEUS_CLIENT_SECRET
 });
+
+// Cache settings
+const CACHE_DIR = path.join(process.cwd(), 'public', 'cache', 'destination-flights');
+// Get cache duration from environment variable or use default 3 days
+const CACHE_DURATION_DAYS = parseInt(process.env.CACHE_DURATION_DAYS || '3', 10);
+const CACHE_DURATION = CACHE_DURATION_DAYS * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+
+// Ensure cache directory exists
+function ensureCacheDirectory() {
+  if (!fs.existsSync(CACHE_DIR)) {
+    try {
+      fs.mkdirSync(CACHE_DIR, { recursive: true });
+    } catch (error) {
+      console.error('Error creating destination flights cache directory:', error);
+    }
+  }
+}
+
+// Create a cache key from search parameters
+function createCacheKey(destination: string, origin: string): string {
+  return `${origin}-${destination}`;
+}
+
+// Check if cache exists and is valid
+function getFromCache(cacheKey: string): any | null {
+  try {
+    ensureCacheDirectory();
+    const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
+    
+    if (fs.existsSync(cacheFile)) {
+      const cacheContent = fs.readFileSync(cacheFile, 'utf-8');
+      const cache = JSON.parse(cacheContent);
+      
+      // Check if cache is still valid
+      const now = Date.now();
+      if (now - cache.timestamp < CACHE_DURATION) {
+        console.log(`Using cached destination flights for ${cacheKey} from`, new Date(cache.timestamp));
+        return cache.data;
+      }
+      console.log(`Cache for ${cacheKey} expired, fetching fresh data`);
+    }
+  } catch (error) {
+    console.error(`Error reading cache for ${cacheKey}:`, error);
+  }
+  return null;
+}
+
+// Write data to cache
+function writeToCache(cacheKey: string, data: any) {
+  try {
+    ensureCacheDirectory();
+    const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
+    
+    const cacheData = {
+      data,
+      timestamp: Date.now()
+    };
+    fs.writeFileSync(cacheFile, JSON.stringify(cacheData));
+    console.log(`Destination flights for ${cacheKey} cached at`, new Date());
+  } catch (error) {
+    console.error(`Error writing cache for ${cacheKey}:`, error);
+  }
+}
+
+// Helper function for getting future dates
+function getFutureDateString(daysAhead = 30) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  return date.toISOString().split('T')[0];
+}
 
 export async function GET(request: Request) {
   try {
@@ -15,112 +85,75 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const destination = searchParams.get('destination') || '';
     const departureAirport = searchParams.get('origin') || 'LHR';
-    const futureMonths = parseInt(searchParams.get('futureMonths') || '6');
 
     console.log('Destination flight search parameters:', {
-      destination, departureAirport, futureMonths
+      destination, departureAirport
     });
-
-    // For testing with test credentials, we'll use mock data
-    const mockFlights = getMockFlightData();
     
-    // If no destination specified, return all flights
+    // If no destination specified, return error
     if (!destination) {
-      return NextResponse.json(mockFlights);
+      return NextResponse.json(
+        { error: 'Missing destination parameter' },
+        { status: 400 }
+      );
+    }
+    
+    // Create a cache key and check cache first
+    const cacheKey = createCacheKey(destination, departureAirport);
+    const cachedData = getFromCache(cacheKey);
+    
+    if (cachedData) {
+      return NextResponse.json(cachedData);
     }
 
-    // Filter mockFlights for the destination
-    // In a real implementation, we would call the Amadeus API with the destination
-    const destinationFlights = mockFlights.filter(flight => {
-      const arrivalCode = flight.itineraries[0]?.segments[0]?.arrival.iataCode;
-      return arrivalCode === destination.toUpperCase();
-    });
-
-    // Generate additional flights with different dates for this destination
-    const generatedFlights = [];
-    
+    // Ensure we have a valid 3-letter IATA code
     // Use JFK for New York if the destination matches
     const destinationCode = destination.toUpperCase() === 'NYC' ? 'JFK' : destination.toUpperCase();
     
-    // Generate mock flights for future months for demonstration
-    for (let i = 1; i <= futureMonths; i++) {
-      const departureDate = new Date();
-      departureDate.setMonth(departureDate.getMonth() + i);
-      
-      const returnDate = new Date(departureDate);
-      returnDate.setDate(returnDate.getDate() + 7);
-      
-      // Create outbound and return dates
-      const formattedDepartureDate = departureDate.toISOString().split('T')[0];
-      const formattedReturnDate = returnDate.toISOString().split('T')[0];
-      
-      // Generate price variations
-      const basePrice = 500 + Math.floor(Math.random() * 300);
-      
-      generatedFlights.push({
-        id: `gen-${i}`,
-        price: {
-          total: basePrice.toFixed(2),
-          currency: 'GBP'
-        },
-        itineraries: [
-          {
-            segments: [
-              {
-                departure: {
-                  iataCode: departureAirport,
-                  terminal: '5',
-                  at: `${formattedDepartureDate}T${8 + Math.floor(Math.random() * 8)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}:00`
-                },
-                arrival: {
-                  iataCode: destinationCode,
-                  terminal: '1',
-                  at: `${formattedDepartureDate}T${14 + Math.floor(Math.random() * 8)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}:00`
-                },
-                carrierCode: ['BA', 'AA', 'UA', 'DL', 'VS'][Math.floor(Math.random() * 5)],
-                number: (100 + Math.floor(Math.random() * 900)).toString(),
-                duration: 'PT7H30M'
-              }
-            ]
-          },
-          {
-            segments: [
-              {
-                departure: {
-                  iataCode: destinationCode,
-                  terminal: '1',
-                  at: `${formattedReturnDate}T${10 + Math.floor(Math.random() * 8)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}:00`
-                },
-                arrival: {
-                  iataCode: departureAirport,
-                  terminal: '5',
-                  at: `${formattedReturnDate}T${17 + Math.floor(Math.random() * 6)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}:00`
-                },
-                carrierCode: ['BA', 'AA', 'UA', 'DL', 'VS'][Math.floor(Math.random() * 5)],
-                number: (100 + Math.floor(Math.random() * 900)).toString(),
-                duration: 'PT8H15M'
-              }
-            ]
-          }
-        ]
-      });
+    if (destinationCode.length !== 3) {
+      return NextResponse.json(
+        { error: 'Invalid destination code. Please use a 3-letter IATA airport code.' },
+        { status: 400 }
+      );
     }
-
-    // Return the combination of actual filtered flights and generated flights
-    const allFlights = [...destinationFlights, ...generatedFlights];
     
-    // Sort by price
-    allFlights.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
-    
-    return NextResponse.json(allFlights);
+    try {
+      // Make a minimal API call to keep costs down
+      // Use the first date as today + 1 month
+      const departureDate = getFutureDateString(30);
+      const returnDate = getFutureDateString(37);
+      
+      const response = await amadeus.shopping.flightOffersSearch.get({
+        originLocationCode: departureAirport,
+        destinationLocationCode: destinationCode,
+        departureDate: departureDate,
+        returnDate: returnDate,
+        adults: '1',
+        max: 5 // Limit to 5 results to reduce API usage
+      });
+      
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // Use the real API response data
+        writeToCache(cacheKey, response.data);
+        return NextResponse.json(response.data);
+      } else {
+        console.log('No destination flights found');
+        return NextResponse.json(
+          { error: `No flights found from ${departureAirport} to ${destinationCode}` },
+          { status: 404 }
+        );
+      }
+    } catch (apiError) {
+      console.error('Amadeus API error:', apiError);
+      return NextResponse.json(
+        { error: 'Unable to fetch flights', details: apiError instanceof Error ? apiError.message : String(apiError) },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    console.error('Error in destination flights API:', error);
-    const errorMessage = error instanceof Error 
-      ? `${error.name}: ${error.message}` 
-      : 'Failed to search for destination flights';
-    
+    console.error('Error in destination flights route:', error);
     return NextResponse.json(
-      { error: errorMessage },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

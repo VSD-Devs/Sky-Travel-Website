@@ -1,0 +1,229 @@
+{
+  "currentMonth": "2025-05",
+  "totalCalls": 34,
+  "records": [
+    {
+      "timestamp": 1746712219951,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746712543823,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746712946771,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746731027156,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746731039976,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746731057575,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746731068523,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=IT"
+    },
+    {
+      "timestamp": 1746731082759,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=ES"
+    },
+    {
+      "timestamp": 1746731098267,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=GR"
+    },
+    {
+      "timestamp": 1746731625857,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746731644776,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=GR"
+    },
+    {
+      "timestamp": 1746731659093,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746731677980,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=TLS&departureDate=2025-05-09&returnDate=2025-05-16&adults=1&children=0"
+    },
+    {
+      "timestamp": 1746731696522,
+      "ip": "unknown",
+      "endpoint": "flight-details",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746731704797,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=TLS&departureDate=2025-05-09&returnDate=2025-05-16&adults=1&children=0"
+    },
+    {
+      "timestamp": 1746731716759,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746732039210,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746732068432,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746733086980,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746733091976,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746733118769,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=IT"
+    },
+    {
+      "timestamp": 1746733140335,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=GR"
+    },
+    {
+      "timestamp": 1746733149998,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746733161866,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=MAN&destination=CDG&departureDate=2025-05-09&returnDate=2025-05-16&adults=1&children=0"
+    },
+    {
+      "timestamp": 1746733925343,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=ES"
+    },
+    {
+      "timestamp": 1746734161202,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746734403363,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746734403369,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746734495143,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746734966018,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746734972998,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746734977747,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=ES"
+    },
+    {
+      "timestamp": 1746734980723,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1746734991791,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=LYS&departureDate=2025-05-09&returnDate=2025-05-16&adults=1&children=0"
+    }
+  ]
+}

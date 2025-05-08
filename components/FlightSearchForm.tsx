@@ -1,10 +1,11 @@
 'use client';
 
-import { Search, Plane, Users, Calendar, ArrowRight } from 'lucide-react';
+import { Search, Plane, Users, Calendar, ArrowRight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { airports } from '@/data/airports';
 
 // Airport interface to ensure type safety
 interface Airport {
@@ -23,6 +24,7 @@ interface FlightSearchFormProps {
 export default function FlightSearchForm({ variant = 'default', className = '' }: FlightSearchFormProps) {
   const router = useRouter();
   const [destination, setDestination] = useState('');
+  const [destinationIataCode, setDestinationIataCode] = useState('');
   const [departureAirport, setDepartureAirport] = useState('LHR');
   const [departureAirportDisplay, setDepartureAirportDisplay] = useState('London, United Kingdom - Heathrow Airport (LHR)');
   const [departureDate, setDepartureDate] = useState('');
@@ -32,24 +34,27 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
   const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
   const [showDepartureAirportSuggestions, setShowDepartureAirportSuggestions] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [validDestination, setValidDestination] = useState(false);
 
-  // Common airports with more details
-  const airports: Airport[] = [
-    { id: 'lhr', iataCode: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'United Kingdom' },
-    { id: 'lgw', iataCode: 'LGW', name: 'Gatwick Airport', city: 'London', country: 'United Kingdom' },
-    { id: 'stn', iataCode: 'STN', name: 'Stansted Airport', city: 'London', country: 'United Kingdom' },
-    { id: 'cdg', iataCode: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France' },
-    { id: 'ory', iataCode: 'ORY', name: 'Orly Airport', city: 'Paris', country: 'France' },
-    { id: 'jfk', iataCode: 'JFK', name: 'John F. Kennedy Airport', city: 'New York', country: 'USA' },
-    { id: 'lga', iataCode: 'LGA', name: 'LaGuardia Airport', city: 'New York', country: 'USA' },
-    { id: 'ams', iataCode: 'AMS', name: 'Schiphol Airport', city: 'Amsterdam', country: 'Netherlands' },
-    { id: 'fco', iataCode: 'FCO', name: 'Fiumicino Airport', city: 'Rome', country: 'Italy' },
-    { id: 'mad', iataCode: 'MAD', name: 'Barajas Airport', city: 'Madrid', country: 'Spain' },
-    { id: 'dxb', iataCode: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'UAE' },
-    { id: 'syd', iataCode: 'SYD', name: 'Kingsford Smith Airport', city: 'Sydney', country: 'Australia' },
-    { id: 'hnd', iataCode: 'HND', name: 'Haneda Airport', city: 'Tokyo', country: 'Japan' },
-    { id: 'sin', iataCode: 'SIN', name: 'Changi Airport', city: 'Singapore', country: 'Singapore' },
-  ];
+  // Set default dates on component mount
+  useEffect(() => {
+    // Set default departure date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setDepartureDate(tomorrow.toISOString().split('T')[0]);
+    
+    // Set default return date to 7 days after departure
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 8);
+    setReturnDate(nextWeek.toISOString().split('T')[0]);
+  }, []);
+
+  // Extract IATA code from destination string if it contains one
+  const extractIataCode = (text: string): string | null => {
+    // Look for a 3-letter code in parentheses like (LHR)
+    const match = text.match(/\(([A-Z]{3})\)/i);
+    return match ? match[1].toUpperCase() : null;
+  };
 
   // Filter destinations based on search input
   const filteredDestinations = destination.trim() !== '' 
@@ -82,6 +87,8 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
     
     if (!destination) {
       errors.destination = 'Please enter a destination';
+    } else if (!validDestination && !destinationIataCode) {
+      errors.destination = 'Please select a valid airport from the suggestions';
     }
     
     if (!departureAirport) {
@@ -90,6 +97,11 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
     
     if (!departureDate) {
       errors.departureDate = 'Please select a departure date';
+    }
+    
+    // Check if return date is before departure date
+    if (returnDate && new Date(returnDate) < new Date(departureDate)) {
+      errors.returnDate = 'Return date must be after departure date';
     }
     
     setFormErrors(errors);
@@ -101,20 +113,40 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
       return;
     }
     
-    // Check if the destination matches an airport
-    const airportMatch = airports.find(
-      airport => 
-        airport.name.toLowerCase().includes(destination.toLowerCase()) ||
-        airport.city.toLowerCase().includes(destination.toLowerCase()) ||
-        airport.iataCode.toLowerCase() === destination.toLowerCase()
-    );
+    // Determine the destination IATA code
+    let finalDestinationCode = destinationIataCode;
+    
+    // If we don't have a saved IATA code, try to extract it or find an airport match
+    if (!finalDestinationCode) {
+      // First try to extract from the input (e.g., "London (LHR)")
+      const extractedCode = extractIataCode(destination);
+      if (extractedCode) {
+        finalDestinationCode = extractedCode;
+      } else {
+        // Try to find a matching airport
+        const airportMatch = airports.find(
+          airport => 
+            airport.name.toLowerCase().includes(destination.toLowerCase()) ||
+            airport.city.toLowerCase().includes(destination.toLowerCase()) ||
+            airport.iataCode.toLowerCase() === destination.toLowerCase()
+        );
+        
+        if (airportMatch) {
+          finalDestinationCode = airportMatch.iataCode;
+        } else {
+          // If still no match, use the input as-is (API will handle validation)
+          finalDestinationCode = destination.toUpperCase();
+        }
+      }
+    }
+
+    console.log(`Searching for flights: ${departureAirport} → ${finalDestinationCode}`);
 
     // Build search parameters for the flight search
     const searchParams = new URLSearchParams({
       type: 'flight',
       departureAirport,
-      // If we matched an airport, use its code, otherwise just use the destination as entered
-      destination: airportMatch ? airportMatch.iataCode : destination,
+      destination: finalDestinationCode,
       departureDate,
       ...(returnDate && { returnDate }),
       adults,
@@ -127,6 +159,8 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
   // Handle clicking on a destination suggestion
   const handleDestinationClick = (item: any) => {
     setDestination(item.name);
+    setDestinationIataCode(item.iataCode);
+    setValidDestination(true);
     setShowDestinationSuggestions(false);
     
     if (formErrors.destination) {
@@ -243,6 +277,8 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
                 value={destination}
                 onChange={(e) => {
                   setDestination(e.target.value);
+                  setValidDestination(false);
+                  setDestinationIataCode('');
                   setShowDestinationSuggestions(true);
                   if (formErrors.destination) {
                     setFormErrors({ ...formErrors, destination: '' });
@@ -287,15 +323,21 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
               </label>
               <Input
                 type="date"
-                className={`w-full bg-white border-gray-200 text-gray-900 h-10 ${
+                className={`w-full h-10 bg-white border-gray-200 text-gray-900 ${
                   formErrors.departureDate ? 'border-red-500' : ''
                 }`}
-                value={departureDate}
                 min={getTomorrowDate()}
+                value={departureDate}
                 onChange={(e) => {
                   setDepartureDate(e.target.value);
                   if (formErrors.departureDate) {
                     setFormErrors({ ...formErrors, departureDate: '' });
+                  }
+                  // If return date is before the selected departure date, update it
+                  if (returnDate && new Date(e.target.value) > new Date(returnDate)) {
+                    const newReturnDate = new Date(e.target.value);
+                    newReturnDate.setDate(newReturnDate.getDate() + 7);
+                    setReturnDate(newReturnDate.toISOString().split('T')[0]);
                   }
                 }}
               />
@@ -310,11 +352,21 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
               </label>
               <Input
                 type="date"
-                className="w-full bg-white border-gray-200 text-gray-900 h-10"
-                value={returnDate}
+                className={`w-full h-10 bg-white border-gray-200 text-gray-900 ${
+                  formErrors.returnDate ? 'border-red-500' : ''
+                }`}
                 min={departureDate || getTomorrowDate()}
-                onChange={(e) => setReturnDate(e.target.value)}
+                value={returnDate}
+                onChange={(e) => {
+                  setReturnDate(e.target.value);
+                  if (formErrors.returnDate) {
+                    setFormErrors({ ...formErrors, returnDate: '' });
+                  }
+                }}
               />
+              {formErrors.returnDate && (
+                <p className="text-xs text-red-500 mt-1">{formErrors.returnDate}</p>
+              )}
             </div>
           </div>
 

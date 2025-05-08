@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plane, Clock, Info, MapPin, Calendar, ArrowRight, Sun, Sparkles, Check } from 'lucide-react';
 import { FlightOffer } from '@/lib/amadeus';
 import FlightSearchForm from '@/components/FlightSearchForm';
+import { formatAirportDisplay, formatRouteDisplay, getAirportByCode } from '@/data/airports';
 
 // Popular destinations in Portugal
 const popularDestinations = [
@@ -230,7 +231,7 @@ export default function PortugalPage() {
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                         <div>
                           <h3 className="text-xl font-bold text-gray-900">
-                            {getAirportName(outbound.departure.iataCode)} to {getAirportName(outbound.arrival.iataCode)}
+                            {formatRouteDisplay(outbound.departure.iataCode, outbound.arrival.iataCode)}
                           </h3>
                           <p className="text-gray-600">
                             {getAirlineName(outbound.carrierCode)} • Round Trip
@@ -242,52 +243,45 @@ export default function PortugalPage() {
                         </div>
                       </div>
                       
-                      <div className="grid md:grid-cols-5 gap-4 py-4 border-t border-b border-gray-100">
-                        <div className="md:col-span-2">
-                          <p className="text-xs text-gray-500 mb-1">Outbound</p>
-                          <div className="flex items-center mb-2">
-                            <span className="text-xl font-bold text-gray-800">{outboundDateTime.time}</span>
-                            <ArrowRight className="mx-2 text-gray-400 h-4 w-4" />
-                            <span className="text-xl font-bold text-gray-800">{arrivalDateTime.time}</span>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-50 mr-3">
+                            <Plane className="h-5 w-5 text-blue-600" />
                           </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                            <span>{outbound.duration.replace('PT', '')}</span>
+                          <div>
+                            <div className="text-sm text-gray-500">Departure</div>
+                            <div className="font-medium">{outboundDateTime.date} • {outboundDateTime.time}</div>
+                            <div className="text-sm">{formatAirportDisplay(outbound.departure.iataCode)}</div>
                           </div>
                         </div>
                         
-                        <div className="md:col-span-2">
-                          <p className="text-xs text-gray-500 mb-1">Date</p>
-                          <p className="text-gray-800 font-medium">{outboundDateTime.fullDate}</p>
-                          {returnFlight && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              Return: {formatDateTime(returnFlight.departure.at).fullDate}
-                            </p>
-                          )}
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-50 mr-3">
+                            <MapPin className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-500">Arrival</div>
+                            <div className="font-medium">{arrivalDateTime.date} • {arrivalDateTime.time}</div>
+                            <div className="text-sm">{formatAirportDisplay(outbound.arrival.iataCode)}</div>
+                          </div>
                         </div>
                         
-                        <div>
-                          <Button 
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={() => {
-                              const queryParams = new URLSearchParams({
-                                flightId: flight.id,
-                                origin: outbound.departure.iataCode,
-                                destination: outbound.arrival.iataCode,
-                                destinationCity: getAirportName(outbound.arrival.iataCode),
-                                departureDate: outbound.departure.at,
-                                returnDate: returnFlight?.departure.at || '',
-                                price: flight.price.total,
-                                airline: outbound.carrierCode,
-                                flightNumber: outbound.number
-                              });
-                              
-                              router.push(`/enquire?${queryParams.toString()}`);
-                            }}
-                          >
-                            Book Now
-                          </Button>
-                        </div>
+                        {returnFlight && (
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-50 mr-3">
+                              <Calendar className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <div className="text-sm text-gray-500">Return</div>
+                              <div className="font-medium">
+                                {formatDateTime(returnFlight.departure.at).date}
+                              </div>
+                              <div className="text-sm">
+                                {formatAirportDisplay(returnFlight.departure.iataCode)} to {formatAirportDisplay(returnFlight.arrival.iataCode)}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Card>
