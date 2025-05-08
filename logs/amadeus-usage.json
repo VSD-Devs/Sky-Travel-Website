@@ -1,6 +1,6 @@
 {
   "currentMonth": "2025-05",
-  "totalCalls": 34,
+  "totalCalls": 36,
   "records": [
     {
       "timestamp": 1746712219951,
@@ -224,6 +224,19 @@
       "endpoint": "flight-search",
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
       "query": "origin=LHR&destination=LYS&departureDate=2025-05-09&returnDate=2025-05-16&adults=1&children=0"
+    },
+    {
+      "timestamp": 1746737285018,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1746737320838,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=CPT&departureDate=2025-05-09&returnDate=2025-05-16&adults=1&children=0"
     }
   ]
 }

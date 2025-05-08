@@ -226,4 +226,15 @@ export function isValidApiKey(apiKey: string | null): boolean {
   
   const expectedKey = simpleHash(`${API_KEY_SECRET}-${today}`);
   return apiKey === expectedKey;
-} 
+}
+
+// Add 'destination-search' to the endpoint configurations
+const ENDPOINT_CONFIGS = {
+  // ... existing endpoints
+  'destination-search': {
+    tokensPerInterval: 10,
+    interval: 60 * 1000, // 1 minute
+    maxBurst: 5
+  },
+  // ... other endpoints
+}; 

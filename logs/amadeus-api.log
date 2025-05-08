@@ -111,3 +111,7 @@
 {"timestamp":"2025-05-08T20:09:40.727Z","level":"INFO","source":"country-flights-api","message":"Country flights retrieved [3371b963]: FR","details":{"resultCount":10}}
 {"timestamp":"2025-05-08T20:09:51.791Z","level":"INFO","source":"flight-search-api","message":"Flight search request [456c4aa8]: LHR → LYS","details":null,"params":{"originLocationCode":"LHR","destinationLocationCode":"LYS","departureDate":"2025-05-09","returnDate":"2025-05-16","adults":"1"}}
 {"timestamp":"2025-05-08T20:09:56.246Z","level":"INFO","source":"flight-search-api","message":"Search completed [456c4aa8]: Found 15 flights","details":{"resultCount":15}}
+{"timestamp":"2025-05-08T20:48:05.019Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [770d7ca3]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-08T20:48:05.022Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [770d7ca3]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-08T20:48:40.841Z","level":"INFO","source":"flight-search-api","message":"Flight search request [4d40d15b]: LHR → CPT","details":null,"params":{"originLocationCode":"LHR","destinationLocationCode":"CPT","departureDate":"2025-05-09","returnDate":"2025-05-16","adults":"1"}}
+{"timestamp":"2025-05-08T20:48:45.165Z","level":"INFO","source":"flight-search-api","message":"Search completed [4d40d15b]: Found 15 flights","details":{"resultCount":15}}
