@@ -1,12 +1,13 @@
 'use client';
 
-import { Search, Plane, Users, Calendar, ArrowRight, Info } from 'lucide-react';
+import { Search, Plane, Users, Calendar, ArrowRight, Info, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { airports } from '@/data/airports';
 import EnhancedDestinationSearch, { Destination } from './EnhancedDestinationSearch';
+import { cn } from '@/lib/utils';
 
 // Airport interface to ensure type safety
 interface Airport {
@@ -57,7 +58,52 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
         airport.country.toLowerCase().includes(departureAirportDisplay.toLowerCase()) ||
         airport.iataCode.toLowerCase().includes(departureAirportDisplay.toLowerCase())
       )
-    : airports;
+    : airports.filter(airport => ['LHR', 'LGW', 'MAN', 'EDI', 'BHX'].includes(airport.iataCode));
+
+  // Group departure airports by city to identify cities with multiple airports
+  const citiesWithMultipleAirports = new Set<string>();
+  const airportsByCity: Record<string, typeof airports> = {};
+  
+  // Build city groups
+  filteredDepartureAirports.forEach(airport => {
+    const cityKey = `${airport.city}-${airport.country}`;
+    if (!airportsByCity[cityKey]) {
+      airportsByCity[cityKey] = [];
+    }
+    airportsByCity[cityKey].push(airport);
+    
+    // If there are now 2 or more airports for this city, add it to the set
+    if (airportsByCity[cityKey].length >= 2) {
+      citiesWithMultipleAirports.add(cityKey);
+    }
+  });
+  
+  // Create all-airports options for multi-airport cities
+  const allAirportsOptions = Array.from(citiesWithMultipleAirports).map(cityKey => {
+    const cityAirports = airportsByCity[cityKey];
+    const [city, country] = cityKey.split('-');
+    return {
+      id: `all-${cityKey}`,
+      iataCode: city.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code
+      name: `All airports`,
+      city,
+      country,
+      isAllAirports: true
+    };
+  });
+  
+  // Combine the regular airports with the all-airports options
+  const combinedDepartureOptions = [...allAirportsOptions, ...filteredDepartureAirports];
+  
+  // Sort options to show "All airports" first and then by city name
+  const sortedDepartureOptions = combinedDepartureOptions.sort((a, b) => {
+    // Always put "All airports" options first
+    if (a.isAllAirports && !b.isAllAirports) return -1;
+    if (!a.isAllAirports && b.isAllAirports) return 1;
+    
+    // Then sort by city name
+    return a.city.localeCompare(b.city);
+  });
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -111,6 +157,12 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
       setDestinationIataCode(selectedDestination.iataCode);
       setValidDestination(true);
       
+      // Store additional information for all airports option
+      if (selectedDestination.isAllAirports) {
+        console.log(`Selected all airports in ${selectedDestination.cityName}`);
+        // The API will handle the "all airports" code format
+      }
+      
       if (formErrors.destination) {
         setFormErrors({ ...formErrors, destination: '' });
       }
@@ -119,8 +171,16 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
 
   // Handle clicking on a departure airport suggestion
   const handleDepartureAirportClick = (airport: any) => {
-    setDepartureAirport(airport.iataCode);
-    setDepartureAirportDisplay(`${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`);
+    if (airport.isAllAirports) {
+      // For "All airports" option, use the special code
+      setDepartureAirport(airport.iataCode);
+      setDepartureAirportDisplay(`${airport.city}, ${airport.country} (All airports)`);
+    } else {
+      // For regular airports
+      setDepartureAirport(airport.iataCode);
+      setDepartureAirportDisplay(`${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`);
+    }
+    
     setShowDepartureAirportSuggestions(false);
     
     if (formErrors.departureAirport) {
@@ -190,19 +250,33 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
               )}
               
               {/* Airport Suggestions Dropdown */}
-              {showDepartureAirportSuggestions && filteredDepartureAirports.length > 0 && (
+              {showDepartureAirportSuggestions && sortedDepartureOptions.length > 0 && (
                 <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200">
                   <ul className="max-h-60 overflow-auto">
-                    {filteredDepartureAirports.slice(0, 6).map((airport) => (
+                    {sortedDepartureOptions.slice(0, 8).map((airport) => (
                       <li key={airport.id}>
                         <button
-                          className="w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors duration-150 flex items-center"
+                          className={cn(
+                            "w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors duration-150 flex items-center",
+                            airport.isAllAirports && "bg-blue-50/50"
+                          )}
                           onClick={() => handleDepartureAirportClick(airport)}
                         >
-                          <Plane className="w-4 h-4 mr-2 text-blue-600" />
+                          {airport.isAllAirports ? (
+                            <Globe className="w-4 h-4 mr-2 text-blue-600" />
+                          ) : (
+                            <Plane className="w-4 h-4 mr-2 text-blue-600" />
+                          )}
                           <div>
-                            <div className="font-medium text-gray-900">{airport.city}, {airport.country}</div>
-                            <div className="text-xs text-gray-500">{airport.name} ({airport.iataCode})</div>
+                            <div className="font-medium text-gray-900">
+                              {airport.city}, {airport.country}
+                              {airport.isAllAirports && (
+                                <span className="ml-1 text-blue-600">(All airports)</span>
+                              )}
+                            </div>
+                            {!airport.isAllAirports && (
+                              <div className="text-xs text-gray-500">{airport.name} ({airport.iataCode})</div>
+                            )}
                           </div>
                         </button>
                       </li>

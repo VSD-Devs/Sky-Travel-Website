@@ -21,6 +21,7 @@ export interface DestinationSearchResult {
   cityName?: string;
   countryName?: string;
   displayName: string;
+  isAllAirports?: boolean;
 }
 
 export async function GET(request: NextRequest) {
@@ -88,15 +89,18 @@ export async function GET(request: NextRequest) {
       };
     });
     
+    // Group airports by city to detect when we need to add "All" option
+    const processedResults = processResultsWithAllOption(results);
+    
     // Log successful results
     logAmadeusEvent(
       LogLevel.INFO,
       'destination-search-api',
-      `Search completed [${requestId}]: Found ${results.length} destinations`,
-      { resultCount: results.length }
+      `Search completed [${requestId}]: Found ${processedResults.length} destinations`,
+      { resultCount: processedResults.length }
     );
     
-    return NextResponse.json(results);
+    return NextResponse.json(processedResults);
   } catch (error) {
     // Handle errors
     const errorDetails = handleAmadeusError(
@@ -127,16 +131,19 @@ export async function GET(request: NextRequest) {
         cityName: airport.city,
         countryName: airport.country,
         displayName: `${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`
-      })).slice(0, 20);
+      }));
+      
+      // Process the local results to add "All" options
+      const processedLocalResults = processLocalResultsWithAllOption(filteredAirports.slice(0, 20));
       
       logAmadeusEvent(
         LogLevel.WARNING,
         'destination-search-api',
         `Falling back to local airport data [${requestId}]`,
-        { resultsCount: filteredAirports.length, originalError: errorDetails.error }
+        { resultsCount: processedLocalResults.length, originalError: errorDetails.error }
       );
       
-      return NextResponse.json(filteredAirports);
+      return NextResponse.json(processedLocalResults);
     }
     
     return createErrorResponse(
@@ -145,6 +152,86 @@ export async function GET(request: NextRequest) {
       { ...errorDetails.details, requestId }
     );
   }
+}
+
+// Process results to add "All" options for cities with multiple airports
+function processResultsWithAllOption(results: DestinationSearchResult[]): DestinationSearchResult[] {
+  // Group airports by city
+  const cityAirports: Record<string, DestinationSearchResult[]> = {};
+  
+  // First, collect all airports by city
+  results.forEach(item => {
+    if (item.subType === 'AIRPORT' && item.cityName) {
+      const cityKey = `${item.cityName.toLowerCase()}-${item.countryName?.toLowerCase() || ''}`;
+      if (!cityAirports[cityKey]) {
+        cityAirports[cityKey] = [];
+      }
+      cityAirports[cityKey].push(item);
+    }
+  });
+  
+  // For cities with multiple airports, create an "All" option
+  const additionalOptions: DestinationSearchResult[] = [];
+  
+  Object.entries(cityAirports).forEach(([cityKey, airports]) => {
+    if (airports.length > 1) {
+      // Create an "All" option for this city
+      const firstAirport = airports[0];
+      additionalOptions.push({
+        type: 'location',
+        subType: 'CITY',
+        name: `${firstAirport.cityName} (All airports)`,
+        iataCode: firstAirport.cityName?.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code
+        cityName: firstAirport.cityName,
+        countryName: firstAirport.countryName,
+        displayName: `${firstAirport.cityName}, ${firstAirport.countryName} (All airports)`,
+        isAllAirports: true
+      });
+    }
+  });
+  
+  // Prioritize "All" options by placing them at the top of the list
+  return [...additionalOptions, ...results];
+}
+
+// Process local results to add "All" options for cities with multiple airports 
+function processLocalResultsWithAllOption(results: any[]): DestinationSearchResult[] {
+  // Group airports by city
+  const cityAirports: Record<string, any[]> = {};
+  
+  // First, collect all airports by city
+  results.forEach(item => {
+    if (item.cityName) {
+      const cityKey = `${item.cityName.toLowerCase()}-${item.countryName?.toLowerCase() || ''}`;
+      if (!cityAirports[cityKey]) {
+        cityAirports[cityKey] = [];
+      }
+      cityAirports[cityKey].push(item);
+    }
+  });
+  
+  // For cities with multiple airports, create an "All" option
+  const additionalOptions: DestinationSearchResult[] = [];
+  
+  Object.entries(cityAirports).forEach(([cityKey, airports]) => {
+    if (airports.length > 1) {
+      // Create an "All" option for this city
+      const firstAirport = airports[0];
+      additionalOptions.push({
+        type: 'location',
+        subType: 'CITY',
+        name: `${firstAirport.cityName} (All airports)`,
+        iataCode: firstAirport.cityName?.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code
+        cityName: firstAirport.cityName,
+        countryName: firstAirport.countryName,
+        displayName: `${firstAirport.cityName}, ${firstAirport.countryName} (All airports)`,
+        isAllAirports: true
+      });
+    }
+  });
+  
+  // Prioritize "All" options by placing them at the top of the list
+  return [...additionalOptions, ...results];
 }
 
 // Helper function to format display names

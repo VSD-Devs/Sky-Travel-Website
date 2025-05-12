@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Loader2, MapPin, Building } from 'lucide-react';
+import { Search, Loader2, MapPin, Building, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 // Interface for search results
 interface Destination {
@@ -15,6 +16,7 @@ interface Destination {
   cityName?: string;
   countryName?: string;
   displayName: string;
+  isAllAirports?: boolean;
 }
 
 export function DestinationSearch() {
@@ -167,7 +169,11 @@ export function DestinationSearch() {
   };
 
   // Get the appropriate icon for the destination type
-  const getDestinationIcon = (subType: string) => {
+  const getDestinationIcon = (subType: string, isAllAirports?: boolean) => {
+    if (isAllAirports) {
+      return <Globe className="h-4 w-4 mr-2 text-blue-600" />;
+    }
+    
     switch (subType) {
       case 'AIRPORT':
         return <MapPin className="h-4 w-4 mr-2" />;
@@ -214,22 +220,30 @@ export function DestinationSearch() {
                 <li key={`${destination.iataCode}-${index}`}>
                   <button
                     onClick={() => handleResultClick(destination)}
-                    className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors duration-150 flex items-center"
+                    className={cn(
+                      "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors duration-150 flex items-center",
+                      destination.isAllAirports && "bg-blue-50/50"
+                    )}
                   >
-                    {getDestinationIcon(destination.subType)}
+                    {getDestinationIcon(destination.subType, destination.isAllAirports)}
                     <div>
                       <div className="font-medium text-gray-800">
-                        {destination.subType === 'AIRPORT' 
-                          ? destination.name 
-                          : destination.cityName || destination.name}
+                        {destination.isAllAirports 
+                          ? destination.cityName + ' (All airports)'
+                          : destination.subType === 'AIRPORT' 
+                            ? destination.name 
+                            : destination.cityName || destination.name}
                       </div>
                       <div className="text-xs text-gray-500 flex items-center">
                         {destination.countryName || destination.name}
                         <Badge 
-                          variant="outline" 
-                          className="ml-2 text-xs py-0 h-5"
+                          variant={destination.isAllAirports ? "secondary" : "outline"}
+                          className={cn(
+                            "ml-2 text-xs py-0 h-5",
+                            destination.isAllAirports && "bg-blue-100 text-blue-800 border-blue-200"
+                          )}
                         >
-                          {destination.iataCode}
+                          {destination.isAllAirports ? "All" : destination.iataCode}
                         </Badge>
                       </div>
                     </div>
