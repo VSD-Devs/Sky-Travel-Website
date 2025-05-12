@@ -21,7 +21,7 @@ function getApiSecret() {
   try {
     const fs = require('fs');
     const path = require('path');
-    const envPath = path.join(process.cwd(), '.env.local');
+    const envPath = path.join(process.cwd(), '.env');
     
     if (fs.existsSync(envPath)) {
       const envContent = fs.readFileSync(envPath, 'utf8');
@@ -29,7 +29,7 @@ function getApiSecret() {
       
       for (const line of envLines) {
         if (line.startsWith('API_KEY_SECRET=')) {
-          return line.split('=')[1].trim();
+          return line.split('=')[1].trim().replace(/^"|"$/g, '');
         }
       }
     }

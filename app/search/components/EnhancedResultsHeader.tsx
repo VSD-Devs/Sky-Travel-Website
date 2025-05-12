@@ -30,12 +30,11 @@ export default function EnhancedResultsHeader({
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      weekday: 'short'
-    });
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const weekday = date.toLocaleDateString('en-GB', { weekday: 'short' });
+    return `${weekday}, ${day}/${month}/${year}`;
   };
   
   // Handle back button click

@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Sky Limit Travels - Discover Your Next Adventure',
-  description: 'Luxury travel experiences and unforgettable adventures around the world. Expert travel planning, exclusive destinations, and personalised itineraries.',
+  description: 'Travel experiences and unforgettable adventures around the world. Expert travel planning, exclusive destinations, and personalised itineraries.',
 };
 
 export default function RootLayout({

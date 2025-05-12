@@ -6,13 +6,13 @@ A modern travel booking platform built with Next.js and Tailwind CSS.
 
 ### 1. Environment Configuration
 
-Copy the `.env.local.example` file to create your own `.env.local` file:
+Copy the `.env.example` file to create your own `.env` file:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env
 ```
 
-Add your Amadeus production API credentials to the `.env.local` file:
+Add your Amadeus production API credentials to the `.env` file:
 
 ```
 AMADEUS_CLIENT_ID=your_production_client_id
