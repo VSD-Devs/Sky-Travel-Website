@@ -136,22 +136,13 @@ export default function FlightSearchForm({ variant = 'default', className = '' }
 
     console.log(`Searching for flights: ${departureAirport} → ${destinationIataCode}`);
 
-    // Format dates for UK format (DD/MM/YYYY) in the URL
-    const formatDateForUrl = (dateStr: string) => {
-      const date = new Date(dateStr);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
-
-    // Build search parameters for the flight search
+    // Use dates directly without additional formatting
     const searchParams = new URLSearchParams({
       type: 'flight',
       departureAirport,
       destination: destinationIataCode,
-      departureDate: formatDateForUrl(departureDate),
-      ...(returnDate && { returnDate: formatDateForUrl(returnDate) }),
+      departureDate,
+      ...(returnDate && { returnDate }),
       adults,
       children
     });

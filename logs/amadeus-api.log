@@ -123,3 +123,13 @@
 {"timestamp":"2025-05-12T11:22:07.369Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [08a73c61]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
 {"timestamp":"2025-05-12T11:22:18.004Z","level":"INFO","source":"country-flights-api","message":"Country flights request [62692442]: IT","details":{"url":"http://localhost:3000/api/country-flights?code=IT"}}
 {"timestamp":"2025-05-12T11:22:18.463Z","level":"INFO","source":"country-flights-api","message":"Country flights retrieved [62692442]: IT","details":{"resultCount":10}}
+{"timestamp":"2025-05-14T14:39:47.520Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [b89d9bbc]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-14T14:39:51.865Z","level":"INFO","source":"flight-search-api","message":"Flight search request [981001c1]: LHR → CDG","details":null,"params":{"originLocationCode":"LHR","destinationLocationCode":"CDG","departureDate":"","adults":"1"}}
+{"timestamp":"2025-05-14T14:39:51.866Z","level":"WARNING","source":"flight-search-api","message":"Missing required parameters [981001c1]","details":{"origin":"LHR","destination":"CDG","departureDate":""}}
+{"timestamp":"2025-05-14T14:39:52.227Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [b89d9bbc]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-14T14:41:52.688Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [f29a6547]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-14T14:41:52.691Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [f29a6547]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-14T14:42:01.214Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [f5724891]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-14T14:42:01.216Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [f5724891]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-14T14:42:07.503Z","level":"INFO","source":"flight-search-api","message":"Flight search request [20b64734]: LHR → CDG","details":null,"params":{"originLocationCode":"LHR","destinationLocationCode":"CDG","departureDate":"2025-05-15","returnDate":"2025-05-22","adults":"1"}}
+{"timestamp":"2025-05-14T14:42:11.551Z","level":"INFO","source":"flight-search-api","message":"Search completed [20b64734]: Found 15 flights","details":{"resultCount":15}}

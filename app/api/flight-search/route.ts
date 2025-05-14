@@ -29,28 +29,10 @@ export async function GET(request: NextRequest) {
     // Get search parameters
     const origin = searchParams.get('origin') || 'LHR';
     const destination = searchParams.get('destination') || '';
-    const departureDateUK = searchParams.get('departureDate') || '';
-    const returnDateUK = searchParams.get('returnDate') || '';
+    const departureDate = searchParams.get('departureDate') || '';
+    const returnDate = searchParams.get('returnDate') || '';
     const adults = searchParams.get('adults') || '1';
     const children = searchParams.get('children') || '0';
-    
-    // Convert dates from UK format (DD/MM/YYYY) to ISO format (YYYY-MM-DD)
-    const convertUKDateToISO = (ukDate: string): string => {
-      if (!ukDate) return '';
-      
-      // Parse the UK date format
-      const [day, month, year] = ukDate.split('/').map(num => parseInt(num, 10));
-      if (!day || !month || !year) return '';
-      
-      // Create ISO date string (with validation)
-      const date = new Date(year, month - 1, day);
-      if (isNaN(date.getTime())) return '';
-      
-      return date.toISOString().split('T')[0];
-    };
-    
-    const departureDate = convertUKDateToISO(departureDateUK);
-    const returnDate = convertUKDateToISO(returnDateUK);
     
     const searchParams2 = {
       originLocationCode: origin,

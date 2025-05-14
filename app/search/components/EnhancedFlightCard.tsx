@@ -132,6 +132,7 @@ export default function EnhancedFlightCard({
           <div>
             <div className="text-lg font-bold">{formatTime(outboundDeparture.at)}</div>
             <div className="text-sm text-gray-600">{outboundDeparture.iataCode}</div>
+            <div className="text-xs text-gray-500">{getFormattedLocation(outboundDeparture.iataCode)}</div>
             <div className="text-xs text-gray-500">{formatDate(outboundDeparture.at)}</div>
           </div>
           
@@ -152,6 +153,7 @@ export default function EnhancedFlightCard({
           <div className="text-right">
             <div className="text-lg font-bold">{formatTime(outboundArrival.at)}</div>
             <div className="text-sm text-gray-600">{outboundArrival.iataCode}</div>
+            <div className="text-xs text-gray-500">{getFormattedLocation(outboundArrival.iataCode)}</div>
             <div className="text-xs text-gray-500">{formatDate(outboundArrival.at)}</div>
           </div>
         </div>
@@ -166,6 +168,7 @@ export default function EnhancedFlightCard({
               <div>
                 <div className="text-lg font-bold">{formatTime(returnDeparture.at)}</div>
                 <div className="text-sm text-gray-600">{returnDeparture.iataCode}</div>
+                <div className="text-xs text-gray-500">{getFormattedLocation(returnDeparture.iataCode)}</div>
                 <div className="text-xs text-gray-500">{formatDate(returnDeparture.at)}</div>
               </div>
               
@@ -186,6 +189,7 @@ export default function EnhancedFlightCard({
               <div className="text-right">
                 <div className="text-lg font-bold">{formatTime(returnArrival.at)}</div>
                 <div className="text-sm text-gray-600">{returnArrival.iataCode}</div>
+                <div className="text-xs text-gray-500">{getFormattedLocation(returnArrival.iataCode)}</div>
                 <div className="text-xs text-gray-500">{formatDate(returnArrival.at)}</div>
               </div>
             </div>
