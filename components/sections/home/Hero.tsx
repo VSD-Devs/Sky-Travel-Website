@@ -42,15 +42,7 @@ const countryFlags: Record<string, string> = {
 
 // Available region destinations
 const availableRegions: RegionDestination[] = [
-  { id: 'europe', name: 'Europe', path: '/destinations/europe' },
-  { id: 'americas', name: 'Americas', path: '/destinations/americas' },
-  { id: 'spain', name: 'Spain', path: '/flights/countries/spain' },
-  { id: 'italy', name: 'Italy', path: '/flights/countries/italy' },
-  { id: 'greece', name: 'Greece', path: '/flights/countries/greece' },
-  { id: 'turkey', name: 'Turkey', path: '/flights/countries/turkey' },
-  { id: 'france', name: 'France', path: '/flights/countries/france' },
-  { id: 'croatia', name: 'Croatia', path: '/flights/countries/croatia' },
-  { id: 'portugal', name: 'Portugal', path: '/flights/countries/portugal' },
+  // Removing all region shortcuts as they'll be removed from the site
 ];
 
 export default function Hero() {
@@ -103,10 +95,7 @@ export default function Hero() {
               path: `/search?destination=${airport.iataCode}&departureAirport=${departureAirport}&type=flight`
             } as AirportDestination))
         )
-    : [
-        // Show popular destinations by default
-        ...availableRegions.slice(0, 5)
-      ];
+    : []; // Show no suggestions when no input instead of popular destinations
       
   // Group destination airports by country for "All airports in country" option
   const filteredAirportsForDestination = destination.trim() !== '' 
@@ -187,7 +176,7 @@ export default function Hero() {
         // Then sort by name
         return a.name.localeCompare(b.name);
       })
-    : availableRegions.slice(0, 5); // Show just regions when no search input
+    : []; // Don't show any suggestions when no input
 
   // Filter departure airports based on search input
   const filteredDepartureAirports = departureAirportDisplay.trim() !== '' 

@@ -52,11 +52,9 @@ export async function GET(request: NextRequest) {
     const subType = searchParams.get('subType') || ''; // AIRPORT, CITY, or blank for both
     
     if (!keyword || keyword.length < 2) {
-      return createErrorResponse(
-        'Please provide a valid search keyword (minimum 2 characters)',
-        400,
-        { requestId }
-      );
+      // Return an empty array instead of an error when the keyword is too short
+      // This avoids showing suggestions when the user hasn't typed enough
+      return NextResponse.json([]);
     }
     
     // Log search request
@@ -116,6 +114,11 @@ export async function GET(request: NextRequest) {
       
       const { searchParams } = new URL(request.url);
       const keyword = searchParams.get('keyword') || '';
+      
+      // Return empty array if keyword is too short
+      if (keyword.length < 2) {
+        return NextResponse.json([]);
+      }
       
       // Filter local airports based on the keyword
       const filteredAirports = airports.filter(airport => 

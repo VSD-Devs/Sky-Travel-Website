@@ -1,58 +1,11 @@
 {
-  "timestamp": 1746733925819,
+  "timestamp": 1747257990447,
   "data": [
-    {
-      "id": "mock-ES-5-TFS",
-      "price": {
-        "total": "128.59",
-        "currency": "GBP"
-      },
-      "itineraries": [
-        {
-          "segments": [
-            {
-              "departure": {
-                "iataCode": "STN",
-                "terminal": "1",
-                "at": "2025-06-12T10:35:00.000Z"
-              },
-              "arrival": {
-                "iataCode": "TFS",
-                "terminal": "S",
-                "at": "2025-06-12T12:35:00.000Z"
-              },
-              "carrierCode": "EY",
-              "number": "174",
-              "duration": "PT2H30M"
-            }
-          ]
-        },
-        {
-          "segments": [
-            {
-              "departure": {
-                "iataCode": "TFS",
-                "terminal": "S",
-                "at": "2025-06-24T14:50:00.000Z"
-              },
-              "arrival": {
-                "iataCode": "STN",
-                "terminal": "1",
-                "at": "2025-06-24T16:50:00.000Z"
-              },
-              "carrierCode": "EY",
-              "number": "184",
-              "duration": "PT2H30M"
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "mock-ES-0-MAD",
       "price": {
-        "total": "130.99",
-        "currency": "GBP"
+        "total": "135.05",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -61,12 +14,12 @@
               "departure": {
                 "iataCode": "LHR",
                 "terminal": "5",
-                "at": "2025-06-07T05:30:00.000Z"
+                "at": "2025-06-13T05:30:00.000Z"
               },
               "arrival": {
                 "iataCode": "MAD",
                 "terminal": "4",
-                "at": "2025-06-07T07:30:00.000Z"
+                "at": "2025-06-13T07:30:00.000Z"
               },
               "carrierCode": "FR",
               "number": "169",
@@ -80,12 +33,12 @@
               "departure": {
                 "iataCode": "MAD",
                 "terminal": "4",
-                "at": "2025-06-14T09:45:00.000Z"
+                "at": "2025-06-20T09:45:00.000Z"
               },
               "arrival": {
                 "iataCode": "LHR",
                 "terminal": "5",
-                "at": "2025-06-14T11:45:00.000Z"
+                "at": "2025-06-20T11:45:00.000Z"
               },
               "carrierCode": "FR",
               "number": "179",
@@ -96,27 +49,27 @@
       ]
     },
     {
-      "id": "mock-ES-6-MAD",
+      "id": "mock-ES-5-TFS",
       "price": {
-        "total": "193.27",
-        "currency": "GBP"
+        "total": "169.30",
+        "currency": "EUR"
       },
       "itineraries": [
         {
           "segments": [
             {
               "departure": {
-                "iataCode": "LHR",
-                "terminal": "5",
-                "at": "2025-06-13T11:36:00.000Z"
+                "iataCode": "STN",
+                "terminal": "1",
+                "at": "2025-06-18T10:35:00.000Z"
               },
               "arrival": {
-                "iataCode": "MAD",
-                "terminal": "4",
-                "at": "2025-06-13T13:36:00.000Z"
+                "iataCode": "TFS",
+                "terminal": "S",
+                "at": "2025-06-18T12:35:00.000Z"
               },
-              "carrierCode": "BA",
-              "number": "175",
+              "carrierCode": "EY",
+              "number": "174",
               "duration": "PT2H30M"
             }
           ]
@@ -125,17 +78,17 @@
           "segments": [
             {
               "departure": {
-                "iataCode": "MAD",
-                "terminal": "4",
-                "at": "2025-06-26T15:51:00.000Z"
+                "iataCode": "TFS",
+                "terminal": "S",
+                "at": "2025-06-30T14:50:00.000Z"
               },
               "arrival": {
-                "iataCode": "LHR",
-                "terminal": "5",
-                "at": "2025-06-26T17:51:00.000Z"
+                "iataCode": "STN",
+                "terminal": "1",
+                "at": "2025-06-30T16:50:00.000Z"
               },
-              "carrierCode": "BA",
-              "number": "185",
+              "carrierCode": "EY",
+              "number": "184",
               "duration": "PT2H30M"
             }
           ]
@@ -145,8 +98,8 @@
     {
       "id": "mock-ES-1-BCN",
       "price": {
-        "total": "202.78",
-        "currency": "GBP"
+        "total": "184.70",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -155,12 +108,12 @@
               "departure": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-08T06:31:00.000Z"
+                "at": "2025-06-14T06:31:00.000Z"
               },
               "arrival": {
                 "iataCode": "BCN",
                 "terminal": "1",
-                "at": "2025-06-08T08:31:00.000Z"
+                "at": "2025-06-14T08:31:00.000Z"
               },
               "carrierCode": "IB",
               "number": "170",
@@ -174,12 +127,12 @@
               "departure": {
                 "iataCode": "BCN",
                 "terminal": "1",
-                "at": "2025-06-16T10:46:00.000Z"
+                "at": "2025-06-22T10:46:00.000Z"
               },
               "arrival": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-16T12:46:00.000Z"
+                "at": "2025-06-22T12:46:00.000Z"
               },
               "carrierCode": "IB",
               "number": "180",
@@ -190,27 +143,27 @@
       ]
     },
     {
-      "id": "mock-ES-2-AGP",
+      "id": "mock-ES-6-MAD",
       "price": {
-        "total": "226.13",
-        "currency": "GBP"
+        "total": "209.76",
+        "currency": "EUR"
       },
       "itineraries": [
         {
           "segments": [
             {
               "departure": {
-                "iataCode": "STN",
-                "terminal": "1",
-                "at": "2025-06-09T07:32:00.000Z"
+                "iataCode": "LHR",
+                "terminal": "5",
+                "at": "2025-06-19T11:36:00.000Z"
               },
               "arrival": {
-                "iataCode": "AGP",
-                "terminal": "3",
-                "at": "2025-06-09T09:32:00.000Z"
+                "iataCode": "MAD",
+                "terminal": "4",
+                "at": "2025-06-19T13:36:00.000Z"
               },
-              "carrierCode": "AZ",
-              "number": "171",
+              "carrierCode": "BA",
+              "number": "175",
               "duration": "PT2H30M"
             }
           ]
@@ -219,17 +172,17 @@
           "segments": [
             {
               "departure": {
-                "iataCode": "AGP",
-                "terminal": "3",
-                "at": "2025-06-18T11:47:00.000Z"
+                "iataCode": "MAD",
+                "terminal": "4",
+                "at": "2025-07-02T15:51:00.000Z"
               },
               "arrival": {
-                "iataCode": "STN",
-                "terminal": "1",
-                "at": "2025-06-18T13:47:00.000Z"
+                "iataCode": "LHR",
+                "terminal": "5",
+                "at": "2025-07-02T17:51:00.000Z"
               },
-              "carrierCode": "AZ",
-              "number": "181",
+              "carrierCode": "BA",
+              "number": "185",
               "duration": "PT2H30M"
             }
           ]
@@ -239,8 +192,8 @@
     {
       "id": "mock-ES-7-BCN",
       "price": {
-        "total": "236.91",
-        "currency": "GBP"
+        "total": "252.31",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -249,12 +202,12 @@
               "departure": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-14T12:37:00.000Z"
+                "at": "2025-06-20T12:37:00.000Z"
               },
               "arrival": {
                 "iataCode": "BCN",
                 "terminal": "1",
-                "at": "2025-06-14T14:37:00.000Z"
+                "at": "2025-06-20T14:37:00.000Z"
               },
               "carrierCode": "LH",
               "number": "176",
@@ -268,12 +221,12 @@
               "departure": {
                 "iataCode": "BCN",
                 "terminal": "1",
-                "at": "2025-06-21T16:52:00.000Z"
+                "at": "2025-06-27T16:52:00.000Z"
               },
               "arrival": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-21T18:52:00.000Z"
+                "at": "2025-06-27T18:52:00.000Z"
               },
               "carrierCode": "LH",
               "number": "186",
@@ -284,10 +237,10 @@
       ]
     },
     {
-      "id": "mock-ES-8-AGP",
+      "id": "mock-ES-2-AGP",
       "price": {
-        "total": "266.18",
-        "currency": "GBP"
+        "total": "254.74",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -296,15 +249,15 @@
               "departure": {
                 "iataCode": "STN",
                 "terminal": "1",
-                "at": "2025-06-15T13:38:00.000Z"
+                "at": "2025-06-15T07:32:00.000Z"
               },
               "arrival": {
                 "iataCode": "AGP",
                 "terminal": "3",
-                "at": "2025-06-15T15:38:00.000Z"
+                "at": "2025-06-15T09:32:00.000Z"
               },
-              "carrierCode": "AF",
-              "number": "177",
+              "carrierCode": "AZ",
+              "number": "171",
               "duration": "PT2H30M"
             }
           ]
@@ -315,15 +268,15 @@
               "departure": {
                 "iataCode": "AGP",
                 "terminal": "3",
-                "at": "2025-06-23T17:53:00.000Z"
+                "at": "2025-06-24T11:47:00.000Z"
               },
               "arrival": {
                 "iataCode": "STN",
                 "terminal": "1",
-                "at": "2025-06-23T19:53:00.000Z"
+                "at": "2025-06-24T13:47:00.000Z"
               },
-              "carrierCode": "AF",
-              "number": "187",
+              "carrierCode": "AZ",
+              "number": "181",
               "duration": "PT2H30M"
             }
           ]
@@ -333,8 +286,8 @@
     {
       "id": "mock-ES-3-PMI",
       "price": {
-        "total": "284.11",
-        "currency": "GBP"
+        "total": "284.31",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -343,12 +296,12 @@
               "departure": {
                 "iataCode": "LHR",
                 "terminal": "5",
-                "at": "2025-06-10T08:33:00.000Z"
+                "at": "2025-06-16T08:33:00.000Z"
               },
               "arrival": {
                 "iataCode": "PMI",
                 "terminal": "C",
-                "at": "2025-06-10T10:33:00.000Z"
+                "at": "2025-06-16T10:33:00.000Z"
               },
               "carrierCode": "TK",
               "number": "172",
@@ -362,12 +315,12 @@
               "departure": {
                 "iataCode": "PMI",
                 "terminal": "C",
-                "at": "2025-06-20T12:48:00.000Z"
+                "at": "2025-06-26T12:48:00.000Z"
               },
               "arrival": {
                 "iataCode": "LHR",
                 "terminal": "5",
-                "at": "2025-06-20T14:48:00.000Z"
+                "at": "2025-06-26T14:48:00.000Z"
               },
               "carrierCode": "TK",
               "number": "182",
@@ -378,10 +331,57 @@
       ]
     },
     {
+      "id": "mock-ES-8-AGP",
+      "price": {
+        "total": "289.59",
+        "currency": "EUR"
+      },
+      "itineraries": [
+        {
+          "segments": [
+            {
+              "departure": {
+                "iataCode": "STN",
+                "terminal": "1",
+                "at": "2025-06-21T13:38:00.000Z"
+              },
+              "arrival": {
+                "iataCode": "AGP",
+                "terminal": "3",
+                "at": "2025-06-21T15:38:00.000Z"
+              },
+              "carrierCode": "AF",
+              "number": "177",
+              "duration": "PT2H30M"
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "departure": {
+                "iataCode": "AGP",
+                "terminal": "3",
+                "at": "2025-06-29T17:53:00.000Z"
+              },
+              "arrival": {
+                "iataCode": "STN",
+                "terminal": "1",
+                "at": "2025-06-29T19:53:00.000Z"
+              },
+              "carrierCode": "AF",
+              "number": "187",
+              "duration": "PT2H30M"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "mock-ES-9-PMI",
       "price": {
-        "total": "325.62",
-        "currency": "GBP"
+        "total": "323.82",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -390,12 +390,12 @@
               "departure": {
                 "iataCode": "LHR",
                 "terminal": "5",
-                "at": "2025-06-16T14:39:00.000Z"
+                "at": "2025-06-22T14:39:00.000Z"
               },
               "arrival": {
                 "iataCode": "PMI",
                 "terminal": "C",
-                "at": "2025-06-16T16:39:00.000Z"
+                "at": "2025-06-22T16:39:00.000Z"
               },
               "carrierCode": "U2",
               "number": "178",
@@ -409,12 +409,12 @@
               "departure": {
                 "iataCode": "PMI",
                 "terminal": "C",
-                "at": "2025-06-25T18:54:00.000Z"
+                "at": "2025-07-01T18:54:00.000Z"
               },
               "arrival": {
                 "iataCode": "LHR",
                 "terminal": "5",
-                "at": "2025-06-25T20:54:00.000Z"
+                "at": "2025-07-01T20:54:00.000Z"
               },
               "carrierCode": "U2",
               "number": "188",
@@ -427,8 +427,8 @@
     {
       "id": "mock-ES-4-LPA",
       "price": {
-        "total": "339.79",
-        "currency": "GBP"
+        "total": "342.37",
+        "currency": "EUR"
       },
       "itineraries": [
         {
@@ -437,12 +437,12 @@
               "departure": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-11T09:34:00.000Z"
+                "at": "2025-06-17T09:34:00.000Z"
               },
               "arrival": {
                 "iataCode": "LPA",
                 "terminal": "A",
-                "at": "2025-06-11T11:34:00.000Z"
+                "at": "2025-06-17T11:34:00.000Z"
               },
               "carrierCode": "LX",
               "number": "173",
@@ -456,12 +456,12 @@
               "departure": {
                 "iataCode": "LPA",
                 "terminal": "A",
-                "at": "2025-06-22T13:49:00.000Z"
+                "at": "2025-06-28T13:49:00.000Z"
               },
               "arrival": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-22T15:49:00.000Z"
+                "at": "2025-06-28T15:49:00.000Z"
               },
               "carrierCode": "LX",
               "number": "183",

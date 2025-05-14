@@ -5,15 +5,7 @@ import Image from 'next/image';
 const footerLinks = {
   company: [
     { name: 'About Us', href: '/about' },
-    { name: 'Destinations', href: '/destinations' },
-    { name: 'Our Services', href: '/services' },
     { name: 'Contact', href: '/contact' }
-  ],
-  services: [
-    { name: 'Luxury Retreats', href: '/experiences/luxury' },
-    { name: 'Adventure Tours', href: '/experiences/adventure' },
-    { name: 'Group Travel', href: '/experiences/group' },
-    { name: 'Custom Packages', href: '/experiences/custom' }
   ],
   legal: [
     { name: 'Terms & Conditions', href: '/legal/terms' },
@@ -28,7 +20,7 @@ export default function Footer() {
     <footer className="bg-white border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Main footer content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand column */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center space-x-4">
@@ -65,54 +57,41 @@ export default function Footer() {
           </div>
 
           {/* Company Links */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Services Links */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Services</h3>
-            <ul className="space-y-3">
-              {footerLinks.services.map((link) => (
-                <li key={link.name}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="flex justify-center">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
+              <ul className="space-y-3">
+                {footerLinks.company.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      href={link.href}
+                      className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Legal Links */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.name}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="flex justify-center">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
+              <ul className="space-y-3">
+                {footerLinks.legal.map((link) => (
+                  <li key={link.name}>
+                    <Link 
+                      href={link.href}
+                      className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
