@@ -360,7 +360,7 @@ function createMockFlightsForCountry(countryCode: string): FlightOffer[] {
       id: `mock-${countryCode}-${i}-${destinationAirport.code}`,
       price: {
         total: finalPrice.toFixed(2),
-        currency: 'GBP'
+        currency: 'EUR'
       },
       itineraries: [
         {
@@ -495,7 +495,7 @@ export async function getPopularFlights() {
           .toISOString().split('T')[0];
         
         const response = await fetch(
-          `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LON&destinationLocationCode=${destination.code}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=2&currencyCode=GBP`, 
+          `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LON&destinationLocationCode=${destination.code}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=2&currencyCode=EUR`, 
           {
             method: 'GET',
             headers: {
@@ -514,7 +514,7 @@ export async function getPopularFlights() {
         // Add the city name for display purposes
         data.data[0].cityName = destination.city;
         
-        console.log(`Found flights to ${destination.city} for £${data.data[0].price.total}`);
+        console.log(`Found flights to ${destination.city} for €${data.data[0].price.total}`);
         return data.data[0]; // Return the first flight offer
       } catch (err) {
         console.error(`Error fetching flight to ${destination.code}:`, err);
@@ -533,7 +533,7 @@ export async function getPopularFlights() {
             .toISOString().split('T')[0];
           
           const response = await fetch(
-            `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LON&destinationLocationCode=${destination.code}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=1&currencyCode=GBP`, 
+            `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LON&destinationLocationCode=${destination.code}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=1&currencyCode=EUR`, 
             {
               method: 'GET',
               headers: {
@@ -631,7 +631,7 @@ function createStaticPopularFlights(): FlightOffer[] {
       id: `static-${dest.code}-${index}`,
       price: {
         total: dest.price.toString(),
-        currency: 'GBP'
+        currency: 'EUR'
       },
       cityName: dest.city, // Add city name property to match live API data
       itineraries: [
@@ -839,7 +839,7 @@ export async function getFlightsToCountry(countryCode: string) {
     const destinationPromises = destinationAirports.slice(0, 3).map(async (airportCode) => {
       try {
         const flightResponse = await fetch(
-          `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LHR&destinationLocationCode=${airportCode}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=${RESULTS_PER_DESTINATION}&currencyCode=GBP`, 
+          `https://api.amadeus.com/v2/shopping/flight-offers?originLocationCode=LHR&destinationLocationCode=${airportCode}&departureDate=${departureDate}&returnDate=${returnDate}&adults=1&max=${RESULTS_PER_DESTINATION}&currencyCode=EUR`, 
           {
             method: 'GET',
             headers: {
@@ -933,10 +933,212 @@ export async function searchFlights(params: any) {
       throw new Error('Missing required flight search parameters');
     }
     
-    // Ensure IATA codes are valid format (3 letters)
+    // Clean up IATA codes
     const originCode = params.originLocationCode.toUpperCase().trim();
     const destCode = params.destinationLocationCode.toUpperCase().trim();
     
+    // Special handling for country-level codes (ending with 'C') and city-level codes (ending with 'A')
+    const isOriginCountry = originCode.endsWith('C');
+    const isOriginCity = originCode.endsWith('A');
+    const isDestCountry = destCode.endsWith('C');
+    const isDestCity = destCode.endsWith('A');
+    
+    // Handle special codes by looking up airports from the proper country/city
+    if (isOriginCountry || isOriginCity || isDestCountry || isDestCity) {
+      console.log('Special airport code detected, generating multi-airport search');
+      
+      // Import airports data to get all airports for country/city
+      const { airports } = await import('@/data/airports');
+      
+      // Find matching airports for origin if it's a special code
+      let originAirports: string[] = [originCode]; // Default to the original code
+      
+      if (isOriginCountry) {
+        // For country code (e.g. "FRAC"), get the country name from the first 3 characters
+        const countryCode = originCode.substring(0, 3);
+        const countryName = getCountryNameFromCode(countryCode);
+        
+        if (countryName) {
+          // Get all airports for that country
+          originAirports = airports
+            .filter(airport => airport.country.toLowerCase().includes(countryName.toLowerCase()))
+            .map(airport => airport.iataCode)
+            .slice(0, 5); // Limit to top 5 airports to avoid excessive API calls
+          
+          console.log(`Found ${originAirports.length} airports in ${countryName}`);
+        }
+      } else if (isOriginCity) {
+        // For city code (e.g. "LONA"), get the city name from the first 3 characters
+        const cityCode = originCode.substring(0, 3);
+        const cityName = getCityNameFromCode(cityCode);
+        
+        if (cityName) {
+          // Get all airports for that city
+          originAirports = airports
+            .filter(airport => airport.city.toLowerCase().includes(cityName.toLowerCase()))
+            .map(airport => airport.iataCode);
+          
+          console.log(`Found ${originAirports.length} airports in ${cityName}`);
+        }
+      }
+      
+      // Find matching airports for destination if it's a special code
+      let destAirports: string[] = [destCode]; // Default to the original code
+      
+      if (isDestCountry) {
+        // For country code (e.g. "FRAC"), get the country name from the first 3 characters
+        const countryCode = destCode.substring(0, 3);
+        const countryName = getCountryNameFromCode(countryCode);
+        
+        if (countryName) {
+          // Get all airports for that country
+          destAirports = airports
+            .filter(airport => airport.country.toLowerCase().includes(countryName.toLowerCase()))
+            .map(airport => airport.iataCode)
+            .slice(0, 5); // Limit to top 5 airports to avoid excessive API calls
+          
+          console.log(`Found ${destAirports.length} airports in ${countryName}`);
+        }
+      } else if (isDestCity) {
+        // For city code (e.g. "LONA"), get the city name from the first 3 characters
+        const cityCode = destCode.substring(0, 3);
+        const cityName = getCityNameFromCode(cityCode);
+        
+        if (cityName) {
+          // Get all airports for that city
+          destAirports = airports
+            .filter(airport => airport.city.toLowerCase().includes(cityName.toLowerCase()))
+            .map(airport => airport.iataCode);
+          
+          console.log(`Found ${destAirports.length} airports in ${cityName}`);
+        }
+      }
+      
+      // Now we need to search for each combination
+      let allFlights: any[] = [];
+      
+      // Get auth token first (only once)
+      console.log('Fetching Amadeus auth token...');
+      
+      if (!process.env.AMADEUS_CLIENT_ID || !process.env.AMADEUS_CLIENT_SECRET) {
+        console.error('Missing Amadeus API credentials');
+        throw new Error('Failed to authenticate with Amadeus API: Missing credentials');
+      }
+      
+      const tokenResponse = await fetch('https://api.amadeus.com/v1/security/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          'grant_type': 'client_credentials',
+          'client_id': process.env.AMADEUS_CLIENT_ID,
+          'client_secret': process.env.AMADEUS_CLIENT_SECRET
+        })
+      });
+      
+      const tokenData = await tokenResponse.json();
+      
+      if (!tokenResponse.ok || !tokenData.access_token) {
+        console.error('Failed to authenticate with Amadeus API:', tokenData);
+        throw new Error('Failed to authenticate with Amadeus API');
+      }
+      
+      // Limit the number of airport combinations to avoid excessive API calls
+      const maxCombinations = 5;
+      let combinationsSearched = 0;
+      
+      // Search for each origin-destination combination
+      for (const origin of originAirports) {
+        // Skip special codes, only use actual IATA codes
+        if (origin.endsWith('A') || origin.endsWith('C')) continue;
+        
+        for (const destination of destAirports) {
+          // Skip special codes, only use actual IATA codes
+          if (destination.endsWith('A') || destination.endsWith('C')) continue;
+          
+          // Limit the number of API calls
+          if (combinationsSearched >= maxCombinations) break;
+          combinationsSearched++;
+          
+          // Ensure IATA codes are valid format (3 letters)
+          if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination)) {
+            console.log(`Skipping invalid airport codes: ${origin} - ${destination}`);
+            continue;
+          }
+          
+          // Prepare search parameters for this combination
+          const searchParams = new URLSearchParams({
+            originLocationCode: origin,
+            destinationLocationCode: destination,
+            departureDate: params.departureDate,
+            adults: params.adults || '1',
+            currencyCode: 'EUR',
+            max: '5' // Limit results per combination to avoid excessive data
+          });
+          
+          // Add optional parameters if present
+          if (params.returnDate) searchParams.append('returnDate', params.returnDate);
+          if (params.children) searchParams.append('children', params.children);
+          if (params.travelClass) searchParams.append('travelClass', params.travelClass);
+          if (params.nonStop !== undefined) searchParams.append('nonStop', params.nonStop.toString());
+          
+          console.log(`Searching flights from ${origin} to ${destination}...`);
+          
+          try {
+            // Call the flight offers search API for this combination
+            const flightResponse = await fetch(
+              `https://api.amadeus.com/v2/shopping/flight-offers?${searchParams.toString()}`, 
+              {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${tokenData.access_token}`
+                }
+              }
+            );
+            
+            if (flightResponse.ok) {
+              const flightData = await flightResponse.json();
+              
+              if (flightData.data && Array.isArray(flightData.data) && flightData.data.length > 0) {
+                console.log(`Found ${flightData.data.length} flights from ${origin} to ${destination}`);
+                allFlights = [...allFlights, ...flightData.data];
+              }
+            }
+          } catch (err) {
+            console.error(`Error searching flights from ${origin} to ${destination}:`, err);
+            // Continue with other combinations even if one fails
+          }
+        }
+        
+        if (combinationsSearched >= maxCombinations) break;
+      }
+      
+      if (allFlights.length === 0) {
+        throw new Error('No flights found for the specified locations');
+      }
+      
+      // Sort flights by price
+      allFlights.sort((a: any, b: any) => parseFloat(a.price.total) - parseFloat(b.price.total));
+      
+      // Cache the results
+      try {
+        ensureCacheDirectory();
+        const cache = {
+          timestamp: Date.now(),
+          data: allFlights.slice(0, MAX_FLIGHT_RESULTS) // Limit the number of results
+        };
+        fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+        console.log(`Search results cached as ${cacheKey}`);
+      } catch (error) {
+        console.error('Error caching search results:', error);
+      }
+      
+      return allFlights.slice(0, MAX_FLIGHT_RESULTS);
+    }
+    
+    // Regular search for standard IATA codes
+    // Ensure IATA codes are valid format (3 letters)
     if (!/^[A-Z]{3}$/.test(originCode) || !/^[A-Z]{3}$/.test(destCode)) {
       console.error('Invalid airport codes:', originCode, destCode);
       throw new Error('Invalid airport codes provided');
@@ -976,7 +1178,7 @@ export async function searchFlights(params: any) {
       destinationLocationCode: destCode,
       departureDate: params.departureDate,
       adults: params.adults || '1',
-      currencyCode: 'GBP',
+      currencyCode: 'EUR',
       max: (MAX_FLIGHT_RESULTS * 1.5).toString() // Increase the maximum results to provide more choices
     });
     
@@ -1029,7 +1231,7 @@ export async function searchFlights(params: any) {
           destinationLocationCode: destCode,
           departureDate: altDepartureDateStr,
           adults: params.adults || '1',
-          currencyCode: 'GBP',
+          currencyCode: 'EUR',
           max: '6' // Limit the number of alternative date results
         });
         
@@ -1097,6 +1299,52 @@ export async function searchFlights(params: any) {
     console.error('Error searching flights:', error);
     throw error; // Propagate the error instead of falling back to mock data
   }
+}
+
+// Helper function to convert a 3-letter country code to a name
+// This is an estimation based on the first 3 letters of the country name
+function getCountryNameFromCode(code: string): string | null {
+  // Airport country code (first 3 letters) to full name mapping
+  const countryMap: Record<string, string> = {
+    'UNI': 'United Kingdom',
+    'FRA': 'France',
+    'ITA': 'Italy',
+    'SPA': 'Spain',
+    'GRE': 'Greece',
+    'GER': 'Germany',
+    'USA': 'USA',
+    'POR': 'Portugal',
+    'CRO': 'Croatia',
+    'TUR': 'Turkey',
+    'NET': 'Netherlands',
+    'BEL': 'Belgium',
+    // Add more as needed
+  };
+  
+  return countryMap[code] || null;
+}
+
+// Helper function to convert a 3-letter city code to a name
+// This is an estimation based on the first 3 letters of the city name
+function getCityNameFromCode(code: string): string | null {
+  // Airport city code (first 3 letters) to full name mapping
+  const cityMap: Record<string, string> = {
+    'LON': 'London',
+    'PAR': 'Paris',
+    'ROM': 'Rome',
+    'MAD': 'Madrid',
+    'BAR': 'Barcelona',
+    'MIL': 'Milan',
+    'BER': 'Berlin',
+    'NYC': 'New York',
+    'LAS': 'Las Vegas',
+    'DUB': 'Dubai',
+    'IST': 'Istanbul',
+    'AMS': 'Amsterdam',
+    // Add more as needed
+  };
+  
+  return cityMap[code] || null;
 }
 
 // Create mock flights between specific airports
@@ -1186,7 +1434,7 @@ function createMockFlightsWithRoute(
       id: `mock-${originCode}-${destinationCode}-${i}`,
       price: {
         total: basePrice.toFixed(2),
-        currency: 'GBP'
+        currency: 'EUR'
       },
       itineraries: [
         {

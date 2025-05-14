@@ -1,6 +1,6 @@
 {
   "currentMonth": "2025-05",
-  "totalCalls": 45,
+  "totalCalls": 94,
   "records": [
     {
       "timestamp": 1746712219951,
@@ -294,6 +294,330 @@
       "endpoint": "flight-search",
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
       "query": "origin=LHR&destination=CDG&departureDate=2025-05-15&returnDate=2025-05-22&adults=1&children=0"
+    },
+    {
+      "timestamp": 1747238520617,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=CDG&departureDate=2025-05-15&returnDate=2025-05-22&adults=1&children=0"
+    },
+    {
+      "timestamp": 1747238523293,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747238937669,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747238948634,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=IT"
+    },
+    {
+      "timestamp": 1747238952239,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=italy&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239135674,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "curl/8.4.0",
+      "query": "keyword=italy"
+    },
+    {
+      "timestamp": 1747239255168,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "curl/8.4.0",
+      "query": "keyword=italy"
+    },
+    {
+      "timestamp": 1747239316018,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747239318133,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747239449140,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=IT"
+    },
+    {
+      "timestamp": 1747239452837,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=it&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239454651,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=ita&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239459512,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=fr&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239460388,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=fra&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239461308,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=fran&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239462555,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=franc&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239462959,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=france&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747239956143,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747240033325,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=it&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747240033848,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=ita&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747240034676,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=ital&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747240035916,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=italy&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747243783620,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747243788255,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747243805658,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747243813693,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "code=IT"
+    },
+    {
+      "timestamp": 1747243817988,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747243833972,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1747243836458,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "keyword=it&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747243838660,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "keyword=ita&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747243840355,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "keyword=italy&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747243845527,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "keyword=Italy%20(All%20airports)&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747243846916,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "origin=LHR&destination=ITAC&departureDate=2025-05-15&returnDate=2025-05-22&adults=1&children=0"
+    },
+    {
+      "timestamp": 1747243938245,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747243951019,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747244134347,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747244134373,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747244180797,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747244185725,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747244208332,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747244223870,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1747244226702,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "keyword=it&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747251222216,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747257460450,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747257466066,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "origin=LHR&destination=ITAC&departureDate=2025-05-15&returnDate=2025-05-22&adults=1&children=0"
+    },
+    {
+      "timestamp": 1747257470837,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747257473027,
+      "ip": "unknown",
+      "endpoint": "country-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "code=FR"
+    },
+    {
+      "timestamp": 1747257476942,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "keyword=it&subType=AIRPORT,CITY"
+    },
+    {
+      "timestamp": 1747257479912,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "query": "keyword=france&subType=AIRPORT,CITY"
     }
   ]
 }

@@ -107,6 +107,87 @@ export default function Hero() {
         // Show popular destinations by default
         ...availableRegions.slice(0, 5)
       ];
+      
+  // Group destination airports by country for "All airports in country" option
+  const filteredAirportsForDestination = destination.trim() !== '' 
+    ? airports.filter(airport => 
+        airport.name.toLowerCase().includes(destination.toLowerCase()) ||
+        airport.city.toLowerCase().includes(destination.toLowerCase()) ||
+        airport.iataCode.toLowerCase().includes(destination.toLowerCase()) ||
+        airport.country.toLowerCase().includes(destination.toLowerCase())
+      )
+    : [];
+    
+  // Group airports by country
+  const destinationAirportsByCountry: Record<string, typeof airports> = {};
+  const destinationAirportsByCity: Record<string, typeof airports> = {};
+  
+  // Build country and city groups for destination
+  filteredAirportsForDestination.forEach(airport => {
+    // Group by country
+    const countryKey = airport.country;
+    if (!destinationAirportsByCountry[countryKey]) {
+      destinationAirportsByCountry[countryKey] = [];
+    }
+    destinationAirportsByCountry[countryKey].push(airport);
+    
+    // Group by city
+    const cityKey = `${airport.city}-${airport.country}`;
+    if (!destinationAirportsByCity[cityKey]) {
+      destinationAirportsByCity[cityKey] = [];
+    }
+    destinationAirportsByCity[cityKey].push(airport);
+  });
+  
+  // Create all-airports options for countries
+  const allCountryDestinationOptions = Object.keys(destinationAirportsByCountry)
+    .filter(country => destinationAirportsByCountry[country].length > 1) // Only for countries with multiple airports
+    .map(countryKey => ({
+      id: `all-dest-country-${countryKey}`,
+      name: `${countryKey} (All airports)`,
+      iataCode: countryKey.substring(0, 3).toUpperCase() + 'C', // Create a pseudo code with C suffix for countries
+      path: `/search?destination=${countryKey.substring(0, 3).toUpperCase()}C&departureAirport=${departureAirport}&type=flight`,
+      isCountry: true
+    } as AirportDestination & { isCountry: boolean }));
+    
+  // Create all-airports options for cities with multiple airports
+  const citiesWithMultipleDestinationAirports = Object.keys(destinationAirportsByCity)
+    .filter(cityKey => destinationAirportsByCity[cityKey].length > 1);
+    
+  const allCityDestinationOptions = citiesWithMultipleDestinationAirports
+    .map(cityKey => {
+      const [city, country] = cityKey.split('-');
+      return {
+        id: `all-dest-city-${cityKey}`,
+        name: `${city}, ${country} (All airports)`,
+        iataCode: city.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code with A suffix for cities
+        path: `/search?destination=${city.substring(0, 3).toUpperCase()}A&departureAirport=${departureAirport}&type=flight`,
+        isCity: true
+      } as AirportDestination & { isCity: boolean };
+    });
+  
+  // Combine all destination options and sort appropriately
+  const combinedDestinations = [
+    ...allCountryDestinationOptions,
+    ...allCityDestinationOptions,
+    ...filteredDestinations
+  ];
+  
+  // Sort options to show country options first, then city options, then other destinations
+  const sortedDestinations = destination.trim() !== '' 
+    ? combinedDestinations.sort((a, b) => {
+        // Country "All airports" options first
+        if ('isCountry' in a && !('isCountry' in b)) return -1;
+        if (!('isCountry' in a) && 'isCountry' in b) return 1;
+        
+        // City "All airports" options next
+        if ('isCity' in a && !('isCity' in b) && !('isCountry' in b)) return -1;
+        if (!('isCity' in a) && !('isCountry' in a) && 'isCity' in b) return 1;
+        
+        // Then sort by name
+        return a.name.localeCompare(b.name);
+      })
+    : availableRegions.slice(0, 5); // Show just regions when no search input
 
   // Filter departure airports based on search input
   const filteredDepartureAirports = departureAirportDisplay.trim() !== '' 
@@ -117,6 +198,79 @@ export default function Hero() {
         airport.iataCode.toLowerCase().includes(departureAirportDisplay.toLowerCase())
       )
     : airports.filter(airport => ['LHR', 'LGW', 'MAN', 'EDI', 'BHX'].includes(airport.iataCode));
+
+  // Group departure airports by city to identify cities with multiple airports
+  const citiesWithMultipleAirports = new Set<string>();
+  const airportsByCity: Record<string, typeof airports> = {};
+  // Group airports by country
+  const airportsByCountry: Record<string, typeof airports> = {};
+  
+  // Build city and country groups
+  filteredDepartureAirports.forEach(airport => {
+    // Group by city
+    const cityKey = `${airport.city}-${airport.country}`;
+    if (!airportsByCity[cityKey]) {
+      airportsByCity[cityKey] = [];
+    }
+    airportsByCity[cityKey].push(airport);
+    
+    // If there are now 2 or more airports for this city, add it to the set
+    if (airportsByCity[cityKey].length >= 2) {
+      citiesWithMultipleAirports.add(cityKey);
+    }
+    
+    // Group by country
+    const countryKey = airport.country;
+    if (!airportsByCountry[countryKey]) {
+      airportsByCountry[countryKey] = [];
+    }
+    airportsByCountry[countryKey].push(airport);
+  });
+  
+  // Create all-airports options for multi-airport cities
+  const allAirportsOptions = Array.from(citiesWithMultipleAirports).map(cityKey => {
+    const cityAirports = airportsByCity[cityKey];
+    const [city, country] = cityKey.split('-');
+    return {
+      id: `all-${cityKey}`,
+      iataCode: city.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code with A suffix for cities
+      name: `All airports`,
+      city,
+      country,
+      isAllAirports: true
+    };
+  });
+  
+  // Create all-airports options for each country
+  const allCountryAirportsOptions = Object.keys(airportsByCountry).map(countryKey => {
+    return {
+      id: `all-country-${countryKey}`,
+      iataCode: countryKey.substring(0, 3).toUpperCase() + 'C', // Create a pseudo code with C suffix for countries
+      name: `All airports in ${countryKey}`,
+      city: '', // Empty city since this is country-level
+      country: countryKey,
+      isAllAirports: true,
+      isCountry: true
+    };
+  });
+  
+  // Combine the regular airports with the all-airports options
+  const combinedDepartureOptions = [...allCountryAirportsOptions, ...allAirportsOptions, ...filteredDepartureAirports];
+  
+  // Sort options to show country options first, then city "All airports", then by city name
+  const sortedDepartureOptions = combinedDepartureOptions.sort((a, b) => {
+    // Always put country "All airports" options first
+    if (a.isCountry && !b.isCountry) return -1;
+    if (!a.isCountry && b.isCountry) return 1;
+    
+    // Then put city "All airports" options
+    if (a.isAllAirports && !a.isCountry && !b.isAllAirports) return -1;
+    if (!a.isAllAirports && b.isAllAirports && !b.isCountry) return 1;
+    
+    // Then sort by country, then by city name
+    if (a.country !== b.country) return a.country.localeCompare(b.country);
+    return a.city.localeCompare(b.city);
+  });
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -225,13 +379,23 @@ export default function Hero() {
   };
 
   // Handle clicking on a destination suggestion
-  const handleDestinationClick = (item: Destination) => {
+  const handleDestinationClick = (item: Destination & { isCountry?: boolean, isCity?: boolean }) => {
     if (!('iataCode' in item)) {
       // It's a region destination
       router.push(item.path);
     } else {
-      // It's an airport
-      setDestination(item.name);
+      // It's an airport, country, or city option
+      if (item.isCountry) {
+        // It's an "All airports in Country" option
+        setDestination(`${item.name}`);
+      } else if (item.isCity) {
+        // It's an "All airports in City" option
+        setDestination(`${item.name}`);
+      } else {
+        // Regular airport
+        setDestination(item.name);
+      }
+      
       setDestinationIataCode(item.iataCode);
       setValidDestination(true);
       setShowDestinationSuggestions(false);
@@ -243,9 +407,21 @@ export default function Hero() {
   };
 
   // Handle clicking on a departure airport suggestion
-  const handleDepartureAirportClick = (airport: Airport) => {
-    setDepartureAirport(airport.iataCode);
-    setDepartureAirportDisplay(`${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`);
+  const handleDepartureAirportClick = (airport: any) => {
+    if (airport.isCountry) {
+      // For "All airports in Country" option
+      setDepartureAirport(airport.iataCode);
+      setDepartureAirportDisplay(`${airport.country} (All airports)`);
+    } else if (airport.isAllAirports) {
+      // For "All airports in City" option
+      setDepartureAirport(airport.iataCode);
+      setDepartureAirportDisplay(`${airport.city}, ${airport.country} (All airports)`);
+    } else {
+      // For regular airports
+      setDepartureAirport(airport.iataCode);
+      setDepartureAirportDisplay(`${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`);
+    }
+    
     setShowDepartureAirportSuggestions(false);
     
     if (formErrors.departureAirport) {
@@ -384,24 +560,42 @@ export default function Hero() {
                   )}
                   
                   {/* Airport Suggestions Dropdown */}
-                  {showDepartureAirportSuggestions && filteredDepartureAirports.length > 0 && (
+                  {showDepartureAirportSuggestions && sortedDepartureOptions.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200">
-                      <p className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">Popular airports:</p>
+                      <p className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">Airports and countries:</p>
                       <ul className="max-h-60 overflow-auto">
-                        {filteredDepartureAirports.slice(0, 6).map((airport) => (
+                        {sortedDepartureOptions.slice(0, 8).map((airport) => (
                           <li key={airport.id}>
                             <button
-                              className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors duration-150 flex items-center"
+                              className={`w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors duration-150 flex items-center ${
+                                airport.isCountry ? "bg-green-50/50" : (airport.isAllAirports ? "bg-blue-50/50" : "")
+                              }`}
                               onClick={() => handleDepartureAirportClick(airport)}
                             >
-                              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                <Plane className="w-4 h-4 text-blue-600 -rotate-45" />
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                                {airport.isCountry ? (
+                                  <Globe className="w-5 h-5 text-green-600" />
+                                ) : airport.isAllAirports ? (
+                                  <Globe className="w-5 h-5 text-blue-600" />
+                                ) : (
+                                  <div className="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center">
+                                    <Plane className="w-4 h-4 text-blue-600 -rotate-45" />
+                                  </div>
+                                )}
                               </div>
                               <div>
-                                <div className="font-medium">{airport.city}</div>
-                                <div className="text-xs text-gray-500">
-                                  <span className="font-semibold">{airport.iataCode}</span> • {airport.name}, {airport.country}
-                                </div>
+                                {airport.isCountry ? (
+                                  <div className="font-medium">{airport.country} <span className="text-green-600">(All airports)</span></div>
+                                ) : airport.isAllAirports ? (
+                                  <div className="font-medium">{airport.city}, {airport.country} <span className="text-blue-600">(All airports)</span></div>
+                                ) : (
+                                  <>
+                                    <div className="font-medium">{airport.city}</div>
+                                    <div className="text-xs text-gray-500">
+                                      <span className="font-semibold">{airport.iataCode}</span> • {airport.name}, {airport.country}
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             </button>
                           </li>
@@ -467,27 +661,35 @@ export default function Hero() {
                   )}
                   
                   {/* Destination Suggestions */}
-                  {((showDestinationSuggestions && filteredDestinations.length > 0) || (!destination.trim() && showDestinationSuggestions)) && (
+                  {((showDestinationSuggestions && sortedDestinations.length > 0) || (!destination.trim() && showDestinationSuggestions)) && (
                     <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200">
-                      {destination.trim() === '' && (
-                        <p className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">Popular destinations:</p>
-                      )}
+                      <p className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">Countries and cities:</p>
                       <ul className="max-h-60 overflow-auto">
-                        {filteredDestinations.map((dest) => (
+                        {sortedDestinations.map((dest) => (
                           <li key={dest.id}>
                             <button
-                              className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors duration-150 flex items-center"
+                              className={`w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors duration-150 flex items-center ${
+                                'isCountry' in dest ? "bg-green-50/50" : ('isCity' in dest ? "bg-blue-50/50" : "")
+                              }`}
                               onClick={() => handleDestinationClick(dest)}
                             >
                               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                {'iataCode' in dest ? (
+                                {'isCountry' in dest ? (
+                                  <Globe className="w-5 h-5 text-green-600" />
+                                ) : 'isCity' in dest ? (
+                                  <Globe className="w-5 h-5 text-blue-600" />
+                                ) : 'iataCode' in dest ? (
                                   <Plane className="w-4 h-4 text-blue-600" />
                                 ) : (
                                   <span className="text-base">{countryFlags[dest.id.toLowerCase()] || '🌍'}</span>
                                 )}
                               </div>
                               <div>
-                                {'iataCode' in dest ? (
+                                {'isCountry' in dest ? (
+                                  <div className="font-medium">{dest.name}</div>
+                                ) : 'isCity' in dest ? (
+                                  <div className="font-medium">{dest.name}</div>
+                                ) : 'iataCode' in dest ? (
                                   <>
                                     <div className="font-medium">{dest.name.split(' - ')[0]}</div>
                                     <div className="text-xs text-gray-500">

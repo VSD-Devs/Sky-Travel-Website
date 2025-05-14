@@ -245,8 +245,8 @@ export default function PopularFlights() {
                       <h3 className="font-bold text-lg">{destinationDisplay.split('(')[0].trim()}</h3>
                       <div className="text-sm opacity-90">Return Flight</div>
                     </div>
-                    <div className="text-xl font-bold">
-                      £{parseFloat(flight.price.total).toFixed(2)}
+                    <div className="font-medium text-white">
+                      <span className="text-lg font-bold">€{parseFloat(flight.price.total).toFixed(2)}</span>
                     </div>
                   </div>
                   <CardContent className="p-6">

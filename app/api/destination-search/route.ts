@@ -158,21 +158,51 @@ export async function GET(request: NextRequest) {
 function processResultsWithAllOption(results: DestinationSearchResult[]): DestinationSearchResult[] {
   // Group airports by city
   const cityAirports: Record<string, DestinationSearchResult[]> = {};
+  // Group airports by country
+  const countryAirports: Record<string, DestinationSearchResult[]> = {};
   
-  // First, collect all airports by city
+  // First, collect all airports by city and country
   results.forEach(item => {
     if (item.subType === 'AIRPORT' && item.cityName) {
+      // Group by city
       const cityKey = `${item.cityName.toLowerCase()}-${item.countryName?.toLowerCase() || ''}`;
       if (!cityAirports[cityKey]) {
         cityAirports[cityKey] = [];
       }
       cityAirports[cityKey].push(item);
+      
+      // Group by country
+      if (item.countryName) {
+        const countryKey = item.countryName.toLowerCase();
+        if (!countryAirports[countryKey]) {
+          countryAirports[countryKey] = [];
+        }
+        countryAirports[countryKey].push(item);
+      }
     }
   });
   
   // For cities with multiple airports, create an "All" option
   const additionalOptions: DestinationSearchResult[] = [];
   
+  // Add country-level "All airports" options first
+  Object.entries(countryAirports).forEach(([countryKey, airports]) => {
+    if (airports.length > 0) {
+      // Create an "All airports in Country" option
+      const firstAirport = airports[0];
+      additionalOptions.push({
+        type: 'location',
+        subType: 'COUNTRY',
+        name: `${firstAirport.countryName} (All airports)`,
+        iataCode: firstAirport.countryName?.substring(0, 3).toUpperCase() + 'C', // Create a pseudo code with C suffix for country
+        countryName: firstAirport.countryName,
+        displayName: `${firstAirport.countryName} (All airports)`,
+        isAllAirports: true
+      });
+    }
+  });
+  
+  // Then add city-level "All airports" options
   Object.entries(cityAirports).forEach(([cityKey, airports]) => {
     if (airports.length > 1) {
       // Create an "All" option for this city
@@ -181,7 +211,7 @@ function processResultsWithAllOption(results: DestinationSearchResult[]): Destin
         type: 'location',
         subType: 'CITY',
         name: `${firstAirport.cityName} (All airports)`,
-        iataCode: firstAirport.cityName?.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code
+        iataCode: firstAirport.cityName?.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code with A suffix for airports
         cityName: firstAirport.cityName,
         countryName: firstAirport.countryName,
         displayName: `${firstAirport.cityName}, ${firstAirport.countryName} (All airports)`,
@@ -194,25 +224,55 @@ function processResultsWithAllOption(results: DestinationSearchResult[]): Destin
   return [...additionalOptions, ...results];
 }
 
-// Process local results to add "All" options for cities with multiple airports 
+// Process local results to add "All" options for cities with multiple airports and countries
 function processLocalResultsWithAllOption(results: any[]): DestinationSearchResult[] {
   // Group airports by city
   const cityAirports: Record<string, any[]> = {};
+  // Group airports by country
+  const countryAirports: Record<string, any[]> = {};
   
-  // First, collect all airports by city
+  // First, collect all airports by city and country
   results.forEach(item => {
     if (item.cityName) {
+      // Group by city
       const cityKey = `${item.cityName.toLowerCase()}-${item.countryName?.toLowerCase() || ''}`;
       if (!cityAirports[cityKey]) {
         cityAirports[cityKey] = [];
       }
       cityAirports[cityKey].push(item);
+      
+      // Group by country
+      if (item.countryName) {
+        const countryKey = item.countryName.toLowerCase();
+        if (!countryAirports[countryKey]) {
+          countryAirports[countryKey] = [];
+        }
+        countryAirports[countryKey].push(item);
+      }
     }
   });
   
   // For cities with multiple airports, create an "All" option
   const additionalOptions: DestinationSearchResult[] = [];
   
+  // Add country-level "All airports" options first
+  Object.entries(countryAirports).forEach(([countryKey, airports]) => {
+    if (airports.length > 0) {
+      // Create an "All airports in Country" option
+      const firstAirport = airports[0];
+      additionalOptions.push({
+        type: 'location',
+        subType: 'COUNTRY',
+        name: `${firstAirport.countryName} (All airports)`,
+        iataCode: firstAirport.countryName?.substring(0, 3).toUpperCase() + 'C', // Create a pseudo code with C suffix for country
+        countryName: firstAirport.countryName,
+        displayName: `${firstAirport.countryName} (All airports)`,
+        isAllAirports: true
+      });
+    }
+  });
+  
+  // Then add city-level "All airports" options
   Object.entries(cityAirports).forEach(([cityKey, airports]) => {
     if (airports.length > 1) {
       // Create an "All" option for this city
@@ -221,7 +281,7 @@ function processLocalResultsWithAllOption(results: any[]): DestinationSearchResu
         type: 'location',
         subType: 'CITY',
         name: `${firstAirport.cityName} (All airports)`,
-        iataCode: firstAirport.cityName?.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code
+        iataCode: firstAirport.cityName?.substring(0, 3).toUpperCase() + 'A', // Create a pseudo code with A suffix for airports
         cityName: firstAirport.cityName,
         countryName: firstAirport.countryName,
         displayName: `${firstAirport.cityName}, ${firstAirport.countryName} (All airports)`,

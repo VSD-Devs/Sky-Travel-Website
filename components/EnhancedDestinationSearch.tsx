@@ -153,6 +153,9 @@ export default function EnhancedDestinationSearch({
   // Get the appropriate icon for the destination type
   const getDestinationIcon = (subType: string, isAllAirports?: boolean) => {
     if (isAllAirports) {
+      if (subType === 'COUNTRY') {
+        return <Globe className="h-4 w-4 mr-2 text-green-600" />;
+      }
       return <Globe className="h-4 w-4 mr-2 text-blue-600" />;
     }
     
@@ -227,7 +230,7 @@ export default function EnhancedDestinationSearch({
                     type="button"
                     className={cn(
                       "w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors duration-150 flex items-center",
-                      destination.isAllAirports && "bg-blue-50/50"
+                      destination.isAllAirports && destination.subType === 'COUNTRY' ? "bg-green-50/50" : (destination.isAllAirports ? "bg-blue-50/50" : "")
                     )}
                     onClick={() => handleSelectDestination(destination)}
                   >
@@ -235,7 +238,9 @@ export default function EnhancedDestinationSearch({
                     <div>
                       <div className="font-medium text-gray-800">
                         {destination.isAllAirports 
-                          ? destination.cityName + ' (All airports)'
+                          ? (destination.subType === 'COUNTRY'
+                            ? destination.countryName + ' (All airports)'
+                            : destination.cityName + ' (All airports)')
                           : destination.subType === 'AIRPORT' 
                             ? destination.name 
                             : destination.cityName || destination.name}
@@ -243,13 +248,23 @@ export default function EnhancedDestinationSearch({
                       <div className="text-xs text-gray-500 flex items-center">
                         {destination.countryName || destination.name}
                         <Badge 
-                          variant={destination.isAllAirports ? "secondary" : "outline"}
+                          variant={destination.isAllAirports 
+                            ? (destination.subType === 'COUNTRY' ? "secondary" : "outline") 
+                            : "outline"}
                           className={cn(
                             "ml-2 text-xs py-0 h-5",
-                            destination.isAllAirports && "bg-blue-100 text-blue-800 border-blue-200"
+                            destination.isAllAirports && destination.subType === 'COUNTRY'
+                              ? "bg-green-100 text-green-800 border-green-200"
+                              : (destination.isAllAirports 
+                                  ? "bg-blue-100 text-blue-800 border-blue-200" 
+                                  : "")
                           )}
                         >
-                          {destination.isAllAirports ? "All" : destination.iataCode}
+                          {destination.subType === 'COUNTRY' && destination.isAllAirports
+                            ? "Country"
+                            : destination.subType === 'CITY' && destination.isAllAirports
+                              ? "City" 
+                              : destination.iataCode}
                         </Badge>
                       </div>
                     </div>
