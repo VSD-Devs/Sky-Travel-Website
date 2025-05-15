@@ -1,6 +1,6 @@
 {
   "currentMonth": "2025-05",
-  "totalCalls": 116,
+  "totalCalls": 128,
   "records": [
     {
       "timestamp": 1746712219951,
@@ -756,6 +756,83 @@
       "ip": "unknown",
       "endpoint": "popular-flights",
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747347683153,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747347687695,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=ITAC&departureDate=2025-05-16&returnDate=2025-05-23&adults=1&children=0"
+    },
+    {
+      "timestamp": 1747348035014,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "curl/8.4.0",
+      "query": "keyword=all%20airports"
+    },
+    {
+      "timestamp": 1747348048980,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "curl/8.4.0",
+      "query": "keyword=all%20airports"
+    },
+    {
+      "timestamp": 1747348068447,
+      "ip": "unknown",
+      "endpoint": "destination-search",
+      "userAgent": "curl/8.4.0",
+      "query": "keyword=ALLC"
+    },
+    {
+      "timestamp": 1747348149007,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747348152849,
+      "ip": "unknown",
+      "endpoint": "flight-search",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+      "query": "origin=LHR&destination=ITAC&departureDate=2025-05-16&returnDate=2025-05-23&adults=1&children=0"
+    },
+    {
+      "timestamp": 1747348198376,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747348201915,
+      "ip": "unknown",
+      "endpoint": "flight-details",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747348313220,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747348393893,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+    },
+    {
+      "timestamp": 1747348397401,
+      "ip": "unknown",
+      "endpoint": "flight-details",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
     }
   ]
 }

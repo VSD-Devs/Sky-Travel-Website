@@ -1,0 +1,24 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:3000...
+* Connected to localhost (::1) port 3000
+> GET /api/destination-search?keyword=all%20airports HTTP/1.1
+> Host: localhost:3000
+> User-Agent: curl/8.4.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Access-Control-Allow-Origin: *
+< Access-Control-Allow-Methods: GET,OPTIONS,PATCH,DELETE,POST,PUT
+< Access-Control-Allow-Headers: X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version
+< vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Url
+< content-type: application/json
+< Date: Thu, 15 May 2025 22:27:15 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< Transfer-Encoding: chunked
+< 
+{ [12 bytes data]
+100     2    0     2    0     0      3      0 --:--:-- --:--:-- --:--:--     3100     2    0     2    0     0      3      0 --:--:-- --:--:-- --:--:--     3
+* Connection #0 to host localhost left intact
+[]

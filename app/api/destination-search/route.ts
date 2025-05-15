@@ -57,6 +57,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
     
+    // Special handling for generic terms like "all airports" that might cause confusion
+    if (keyword.toLowerCase() === "all airports" || 
+        keyword.toLowerCase() === "all airport" ||
+        keyword.toLowerCase() === "all" ||
+        keyword.toLowerCase() === "alla" ||
+        keyword.toLowerCase() === "allc") {
+      // Return empty results to avoid confusion with the "All airports" option
+      return NextResponse.json([]);
+    }
+
     // Log search request
     logAmadeusEvent(
       LogLevel.INFO,
@@ -109,51 +119,77 @@ export async function GET(request: NextRequest) {
     
     // For network errors or API unavailability, return local airport data
     if (errorDetails.status >= 500 || errorDetails.error.includes('network')) {
-      // Import local airport data
-      const { airports } = await import('@/data/airports');
-      
-      const { searchParams } = new URL(request.url);
-      const keyword = searchParams.get('keyword') || '';
-      
-      // Return empty array if keyword is too short
-      if (keyword.length < 2) {
+      try {
+        // Import local airport data
+        const { airports } = await import('@/data/airports');
+        
+        const { searchParams } = new URL(request.url);
+        const keyword = searchParams.get('keyword') || '';
+        
+        // Return empty array if keyword is too short
+        if (keyword.length < 2) {
+          return NextResponse.json([]);
+        }
+
+        // Special handling for generic terms like "all airports" that might cause confusion
+        if (keyword.toLowerCase() === "all airports" || 
+            keyword.toLowerCase() === "all airport" ||
+            keyword.toLowerCase() === "all" ||
+            keyword.toLowerCase() === "alla" ||
+            keyword.toLowerCase() === "allc") {
+          // Return empty results to avoid confusion with the "All airports" option
+          return NextResponse.json([]);
+        }
+        
+        // Filter local airports based on the keyword
+        const filteredAirports = airports.filter(airport => 
+          airport.name.toLowerCase().includes(keyword.toLowerCase()) ||
+          airport.city.toLowerCase().includes(keyword.toLowerCase()) ||
+          airport.country.toLowerCase().includes(keyword.toLowerCase()) ||
+          airport.iataCode.toLowerCase().includes(keyword.toLowerCase())
+        ).map(airport => ({
+          type: 'location',
+          subType: 'AIRPORT',
+          name: airport.name,
+          iataCode: airport.iataCode,
+          cityName: airport.city,
+          countryName: airport.country,
+          displayName: `${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`
+        }));
+        
+        // Process the local results to add "All" options
+        const processedLocalResults = processLocalResultsWithAllOption(filteredAirports.slice(0, 20));
+        
+        logAmadeusEvent(
+          LogLevel.WARNING,
+          'destination-search-api',
+          `Falling back to local airport data [${requestId}]`,
+          { resultsCount: processedLocalResults.length, originalError: errorDetails.error }
+        );
+        
+        return NextResponse.json(processedLocalResults);
+      } catch (fallbackError) {
+        // If even the fallback fails, log it and return an empty array
+        logAmadeusEvent(
+          LogLevel.ERROR,
+          'destination-search-api',
+          `Fallback data error [${requestId}]: ${fallbackError.message}`,
+          { originalError: errorDetails.error, fallbackError: fallbackError.message }
+        );
+        
         return NextResponse.json([]);
       }
-      
-      // Filter local airports based on the keyword
-      const filteredAirports = airports.filter(airport => 
-        airport.name.toLowerCase().includes(keyword.toLowerCase()) ||
-        airport.city.toLowerCase().includes(keyword.toLowerCase()) ||
-        airport.country.toLowerCase().includes(keyword.toLowerCase()) ||
-        airport.iataCode.toLowerCase().includes(keyword.toLowerCase())
-      ).map(airport => ({
-        type: 'location',
-        subType: 'AIRPORT',
-        name: airport.name,
-        iataCode: airport.iataCode,
-        cityName: airport.city,
-        countryName: airport.country,
-        displayName: `${airport.city}, ${airport.country} - ${airport.name} (${airport.iataCode})`
-      }));
-      
-      // Process the local results to add "All" options
-      const processedLocalResults = processLocalResultsWithAllOption(filteredAirports.slice(0, 20));
-      
-      logAmadeusEvent(
-        LogLevel.WARNING,
-        'destination-search-api',
-        `Falling back to local airport data [${requestId}]`,
-        { resultsCount: processedLocalResults.length, originalError: errorDetails.error }
-      );
-      
-      return NextResponse.json(processedLocalResults);
     }
     
-    return createErrorResponse(
-      errorDetails.error,
-      errorDetails.status,
-      { ...errorDetails.details, requestId }
+    // Return an empty array instead of an error for better user experience
+    logAmadeusEvent(
+      LogLevel.ERROR,
+      'destination-search-api',
+      `Returning empty results due to error [${requestId}]: ${errorDetails.error}`,
+      { ...errorDetails.details }
     );
+    
+    return NextResponse.json([]);
   }
 }
 

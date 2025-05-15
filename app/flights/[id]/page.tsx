@@ -444,18 +444,11 @@ export default function FlightDetail() {
                 Contact our travel experts to book this flight or create a custom itinerary.
               </p>
               
-              <div className="space-y-4">
-                <Link href="/enquire">
+              <div>
+                <Link href="/contact">
                   <Button className="w-full h-12 text-base">
                     <CreditCard className="mr-2 h-5 w-5" />
                     Enquire Now
-                  </Button>
-                </Link>
-                
-                <Link href="/contact">
-                  <Button variant="outline" className="w-full h-12 text-base">
-                    <Globe className="mr-2 h-5 w-5" />
-                    Contact Us
                   </Button>
                 </Link>
               </div>

@@ -106,10 +106,22 @@ export default function EnhancedDestinationSearch({
         );
         
         if (response.ok) {
-          const data = await response.json();
-          setResults(data);
+          try {
+            const data = await response.json();
+            
+            // Validate that data is an array before setting results
+            if (Array.isArray(data)) {
+              setResults(data);
+            } else {
+              console.error('API returned invalid data format (not an array):', data);
+              setResults([]);
+            }
+          } catch (jsonError) {
+            console.error('Failed to parse JSON response:', jsonError);
+            setResults([]);
+          }
         } else {
-          console.error('Error fetching destinations');
+          console.error('Error fetching destinations:', response.status, response.statusText);
           setResults([]);
         }
       } catch (error) {
