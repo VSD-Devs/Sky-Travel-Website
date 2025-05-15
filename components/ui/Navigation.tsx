@@ -122,17 +122,6 @@ export default function Navigation() {
                         </Link>
                       </div>
                     </div>
-
-                    <div className="p-4 bg-gray-50 border-t border-gray-100">
-                      <Link href="/flights" legacyBehavior passHref>
-                        <a className="text-blue-600 font-medium hover:text-blue-800 transition-colors inline-flex items-center">
-                          View all flight destinations
-                          <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </a>
-                      </Link>
-                    </div>
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
@@ -149,14 +138,6 @@ export default function Navigation() {
                 <Link href="/contact" legacyBehavior passHref>
                   <NavigationMenuLink className="h-10 px-4 text-[15px] font-medium text-gray-800 hover:text-blue-800 bg-white hover:bg-blue-50 rounded-lg inline-flex items-center transition-colors">
                     Contact
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link href="/legal" legacyBehavior passHref>
-                  <NavigationMenuLink className="h-10 px-4 text-[15px] font-medium text-gray-800 hover:text-blue-800 bg-white hover:bg-blue-50 rounded-lg inline-flex items-center transition-colors">
-                    Legal
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -198,86 +179,51 @@ export default function Navigation() {
       >
         <div className="pt-24 px-6 h-full overflow-y-auto">
           <nav className="space-y-6">
-            {/* Flights section at the top of mobile menu */}
-            <div className="mb-6 space-y-3">
+            {/* Simplified mobile navigation with only essential links */}
+            <div className="space-y-3">
               <Link 
-                href="/flights" 
+                href="/" 
                 onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-center bg-blue-50 text-blue-800 font-medium rounded-lg transition-colors border border-blue-200 hover:bg-blue-100"
+                className="flex items-center px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
-                All Flights
+                <svg className="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Home
               </Link>
-              <Link 
-                href="/api/destination-flights" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-center bg-blue-600 text-white font-medium rounded-lg transition-colors border border-blue-700 hover:bg-blue-700"
-              >
-                API Flights
-              </Link>
-            </div>
-          
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-blue-800 px-4 mb-2">Popular Flight Destinations</p>
-              <Link 
-                href="/flights/countries/france" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
-              >
-                France
-              </Link>
-              <Link 
-                href="/flights/countries/spain" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
-              >
-                Spain
-              </Link>
-              <Link 
-                href="/flights/countries/italy" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
-              >
-                Italy
-              </Link>
-              <Link 
-                href="/flights/countries/greece" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
-              >
-                Greece
-              </Link>
-            </div>
-
-            <div className="space-y-1">
+              
               <Link 
                 href="/about" 
                 onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
+                className="flex items-center px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
+                <svg className="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 About Us
               </Link>
+              
               <Link 
                 href="/contact" 
                 onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
+                className="flex items-center px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
               >
+                <svg className="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
                 Contact
-              </Link>
-              <Link 
-                href="/legal" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="block px-4 py-3 text-gray-800 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors border-l-4 border-transparent hover:border-blue-500"
-              >
-                Legal
               </Link>
             </div>
 
             <div className="pt-4">
               <Link 
                 href="/plan-trip"
-                className="block w-full px-4 py-3 text-center bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-medium transition-colors"
+                className="flex items-center justify-center w-full px-4 py-3 text-center bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-medium transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
+                <svg className="w-5 h-5 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
                 Plan Your Trip
               </Link>
             </div>

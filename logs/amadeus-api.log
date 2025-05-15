@@ -307,3 +307,27 @@
 {"timestamp":"2025-05-15T22:33:13.894Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [b4169b41]","details":{"url":"http://localhost:3000/api/popular-flights"}}
 {"timestamp":"2025-05-15T22:33:13.898Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [b4169b41]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
 {"timestamp":"2025-05-15T22:33:17.402Z","level":"INFO","source":"flight-details-api","message":"Flight details request [b951e69c]: 1","details":{"url":"http://localhost:3000/api/flights/1"}}
+{"timestamp":"2025-05-15T23:08:02.486Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [d2a919d9]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:08:06.154Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [d2a919d9]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:08:44.615Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [ad4260af]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:08:44.618Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [ad4260af]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:08:48.597Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [a840c888]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:08:48.599Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [a840c888]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:09:22.895Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [c565904d]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:09:22.899Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [c565904d]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:09:27.091Z","level":"INFO","source":"country-flights-api","message":"Country flights request [61cdd67e]: FR","details":{"url":"http://localhost:3000/api/country-flights?code=FR"}}
+{"timestamp":"2025-05-15T23:09:27.469Z","level":"INFO","source":"country-flights-api","message":"Country flights retrieved [61cdd67e]: FR","details":{"resultCount":10}}
+{"timestamp":"2025-05-15T23:10:37.622Z","level":"INFO","source":"country-flights-api","message":"Country flights request [2fd453d3]: FR","details":{"url":"http://localhost:3000/api/country-flights?code=FR"}}
+{"timestamp":"2025-05-15T23:10:37.624Z","level":"INFO","source":"country-flights-api","message":"Country flights retrieved [2fd453d3]: FR","details":{"resultCount":10}}
+{"timestamp":"2025-05-15T23:22:09.567Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [7ec20ee1]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:22:09.571Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [7ec20ee1]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:26:39.056Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [7bec0d71]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:26:39.059Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [7bec0d71]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:26:42.495Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [1cbee48c]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:26:42.498Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [1cbee48c]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:26:59.277Z","level":"INFO","source":"country-flights-api","message":"Country flights request [d370e3db]: IT","details":{"url":"http://localhost:3000/api/country-flights?code=IT"}}
+{"timestamp":"2025-05-15T23:26:59.721Z","level":"INFO","source":"country-flights-api","message":"Country flights retrieved [d370e3db]: IT","details":{"resultCount":10}}
+{"timestamp":"2025-05-15T23:28:35.513Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [0a693954]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:28:35.520Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [0a693954]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-15T23:28:37.866Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [f9db0af2]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-15T23:28:37.869Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [f9db0af2]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}

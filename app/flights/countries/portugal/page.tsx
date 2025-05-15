@@ -283,6 +283,25 @@ export default function PortugalPage() {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Add Enquire Now button */}
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <Button 
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => {
+                            const queryParams = new URLSearchParams({
+                              origin: outbound.departure.iataCode,
+                              destination: outbound.arrival.iataCode,
+                              departureDate: outboundDateTime.fullDate,
+                              returnDate: returnFlight ? formatDateTime(returnFlight.departure.at).fullDate : ''
+                            });
+                            router.push(`/contact?${queryParams.toString()}`);
+                          }}
+                        >
+                          Enquire Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 );
@@ -332,8 +351,19 @@ export default function PortugalPage() {
                   <p className="text-gray-600 mb-4 text-sm">
                     {destination.description}
                   </p>
-                  <Button variant="outline" className="w-full text-blue-700 border-blue-200 hover:bg-blue-50 hover:border-blue-300">
-                    Explore {destination.name}
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-blue-700 border-blue-200 hover:bg-blue-50 hover:border-blue-300"
+                    onClick={() => {
+                      const queryParams = new URLSearchParams({
+                        destinationCity: destination.name,
+                        destination: destination.code
+                      });
+                      router.push(`/contact?${queryParams.toString()}`);
+                    }}
+                  >
+                    Enquire Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </CardContent>
               </Card>

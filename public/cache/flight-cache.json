@@ -1,5 +1,5 @@
 {
-  "timestamp": 1747345659689,
+  "timestamp": 1747350486141,
   "data": [
     {
       "type": "flight-offer",
@@ -9,9 +9,9 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
-      "numberOfBookableSeats": 2,
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
+      "numberOfBookableSeats": 9,
       "itineraries": [
         {
           "duration": "PT1H50M",
@@ -49,17 +49,17 @@
               "departure": {
                 "iataCode": "CPH",
                 "terminal": "2",
-                "at": "2025-06-05T13:55:00"
+                "at": "2025-06-05T15:20:00"
               },
               "arrival": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-05T14:50:00"
+                "at": "2025-06-05T16:15:00"
               },
               "carrierCode": "D8",
-              "number": "3516",
+              "number": "3524",
               "aircraft": {
-                "code": "7M8"
+                "code": "73H"
               },
               "operating": {
                 "carrierCode": "D8"
@@ -74,7 +74,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "157.36",
+        "total": "157.33",
         "base": "82.00",
         "fees": [
           {
@@ -86,7 +86,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "157.36"
+        "grandTotal": "157.33"
       },
       "pricingOptions": {
         "fareType": [
@@ -104,7 +104,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "157.36",
+            "total": "157.33",
             "base": "82.00"
           },
           "fareDetailsBySegment": [
@@ -329,7 +329,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "180.15",
+        "total": "180.12",
         "base": "29.00",
         "fees": [
           {
@@ -341,7 +341,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "180.15"
+        "grandTotal": "180.12"
       },
       "pricingOptions": {
         "fareType": [
@@ -359,7 +359,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "180.15",
+            "total": "180.12",
             "base": "29.00"
           },
           "fareDetailsBySegment": [
@@ -521,7 +521,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "192.23",
+        "total": "192.20",
         "base": "44.00",
         "fees": [
           {
@@ -533,7 +533,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "192.23"
+        "grandTotal": "192.20"
       },
       "pricingOptions": {
         "fareType": [
@@ -551,7 +551,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "192.23",
+            "total": "192.20",
             "base": "44.00"
           },
           "fareDetailsBySegment": [
@@ -714,7 +714,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "197.69",
+        "total": "197.62",
         "base": "63.00",
         "fees": [
           {
@@ -726,7 +726,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "197.69"
+        "grandTotal": "197.62"
       },
       "pricingOptions": {
         "fareType": [
@@ -744,7 +744,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "197.69",
+            "total": "197.62",
             "base": "63.00"
           },
           "fareDetailsBySegment": [
@@ -979,7 +979,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "207.95",
+        "total": "207.88",
         "base": "63.00",
         "fees": [
           {
@@ -991,7 +991,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "207.95"
+        "grandTotal": "207.88"
       },
       "pricingOptions": {
         "fareType": [
@@ -1009,7 +1009,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "207.95",
+            "total": "207.88",
             "base": "63.00"
           },
           "fareDetailsBySegment": [
@@ -1218,8 +1218,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
       "numberOfBookableSeats": 9,
       "itineraries": [
         {
@@ -1283,7 +1283,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "214.21",
+        "total": "214.18",
         "base": "156.00",
         "fees": [
           {
@@ -1295,7 +1295,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "214.21"
+        "grandTotal": "214.18"
       },
       "pricingOptions": {
         "fareType": [
@@ -1313,7 +1313,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "214.21",
+            "total": "214.18",
             "base": "156.00"
           },
           "fareDetailsBySegment": [
@@ -1570,7 +1570,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "218.82",
+        "total": "218.79",
         "base": "47.00",
         "fees": [
           {
@@ -1582,7 +1582,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "218.82"
+        "grandTotal": "218.79"
       },
       "pricingOptions": {
         "fareType": [
@@ -1600,7 +1600,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "218.82",
+            "total": "218.79",
             "base": "47.00"
           },
           "fareDetailsBySegment": [
@@ -1842,7 +1842,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "221.69",
+        "total": "221.62",
         "base": "87.00",
         "fees": [
           {
@@ -1854,7 +1854,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "221.69"
+        "grandTotal": "221.62"
       },
       "pricingOptions": {
         "fareType": [
@@ -1872,7 +1872,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "221.69",
+            "total": "221.62",
             "base": "87.00"
           },
           "fareDetailsBySegment": [
@@ -2018,9 +2018,9 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
-      "numberOfBookableSeats": 2,
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
+      "numberOfBookableSeats": 9,
       "itineraries": [
         {
           "duration": "PT10H35M",
@@ -2073,7 +2073,7 @@
           ]
         },
         {
-          "duration": "PT6H50M",
+          "duration": "PT8H15M",
           "segments": [
             {
               "departure": {
@@ -2103,17 +2103,17 @@
               "departure": {
                 "iataCode": "CPH",
                 "terminal": "2",
-                "at": "2025-06-05T13:55:00"
+                "at": "2025-06-05T15:20:00"
               },
               "arrival": {
                 "iataCode": "LGW",
                 "terminal": "S",
-                "at": "2025-06-05T14:50:00"
+                "at": "2025-06-05T16:15:00"
               },
               "carrierCode": "D8",
-              "number": "3516",
+              "number": "3524",
               "aircraft": {
-                "code": "7M8"
+                "code": "73H"
               },
               "operating": {
                 "carrierCode": "D8"
@@ -2527,7 +2527,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "234.15",
+        "total": "234.12",
         "base": "67.00",
         "fees": [
           {
@@ -2539,7 +2539,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "234.15"
+        "grandTotal": "234.12"
       },
       "pricingOptions": {
         "fareType": [
@@ -2557,7 +2557,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "234.15",
+            "total": "234.12",
             "base": "67.00"
           },
           "fareDetailsBySegment": [
@@ -2655,8 +2655,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
       "numberOfBookableSeats": 9,
       "itineraries": [
         {
@@ -2720,7 +2720,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "237.85",
+        "total": "237.78",
         "base": "135.00",
         "fees": [
           {
@@ -2732,7 +2732,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "237.85"
+        "grandTotal": "237.78"
       },
       "pricingOptions": {
         "fareType": [
@@ -2750,7 +2750,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "237.85",
+            "total": "237.78",
             "base": "135.00"
           },
           "fareDetailsBySegment": [
@@ -2793,8 +2793,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-15",
-      "lastTicketingDateTime": "2025-05-15",
+      "lastTicketingDate": "2025-05-16",
+      "lastTicketingDateTime": "2025-05-16",
       "numberOfBookableSeats": 9,
       "itineraries": [
         {
@@ -2856,7 +2856,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "245.43",
+        "total": "245.40",
         "base": "158.00",
         "fees": [
           {
@@ -2868,7 +2868,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "245.43"
+        "grandTotal": "245.40"
       },
       "pricingOptions": {
         "fareType": [
@@ -2886,7 +2886,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "245.43",
+            "total": "245.40",
             "base": "158.00"
           },
           "fareDetailsBySegment": [
@@ -3031,8 +3031,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-15",
-      "lastTicketingDateTime": "2025-05-15",
+      "lastTicketingDate": "2025-05-16",
+      "lastTicketingDateTime": "2025-05-16",
       "numberOfBookableSeats": 4,
       "itineraries": [
         {
@@ -3096,7 +3096,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "248.78",
+        "total": "248.75",
         "base": "188.00",
         "fees": [
           {
@@ -3108,7 +3108,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "248.78"
+        "grandTotal": "248.75"
       },
       "pricingOptions": {
         "fareType": [
@@ -3126,7 +3126,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "248.78",
+            "total": "248.75",
             "base": "188.00"
           },
           "fareDetailsBySegment": [
@@ -3303,7 +3303,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "251.45",
+        "total": "251.38",
         "base": "74.00",
         "fees": [
           {
@@ -3315,7 +3315,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "251.45"
+        "grandTotal": "251.38"
       },
       "pricingOptions": {
         "fareType": [
@@ -3333,7 +3333,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "251.45",
+            "total": "251.38",
             "base": "74.00"
           },
           "fareDetailsBySegment": [
@@ -3478,8 +3478,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
       "numberOfBookableSeats": 9,
       "itineraries": [
         {
@@ -3565,7 +3565,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "255.80",
+        "total": "255.73",
         "base": "91.00",
         "fees": [
           {
@@ -3577,7 +3577,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "255.80"
+        "grandTotal": "255.73"
       },
       "pricingOptions": {
         "fareType": [
@@ -3595,7 +3595,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "255.80",
+            "total": "255.73",
             "base": "91.00"
           },
           "fareDetailsBySegment": [
@@ -3720,9 +3720,9 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
-      "numberOfBookableSeats": 2,
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
+      "numberOfBookableSeats": 1,
       "itineraries": [
         {
           "duration": "PT5H5M",
@@ -3824,7 +3824,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "279.16",
+        "total": "279.03",
         "base": "87.00",
         "fees": [
           {
@@ -3836,7 +3836,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "279.16"
+        "grandTotal": "279.03"
       },
       "pricingOptions": {
         "fareType": [
@@ -3854,7 +3854,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "279.16",
+            "total": "279.03",
             "base": "87.00"
           },
           "fareDetailsBySegment": [
@@ -4159,8 +4159,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
       "numberOfBookableSeats": 9,
       "itineraries": [
         {
@@ -4268,7 +4268,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "292.41",
+        "total": "292.37",
         "base": "126.00",
         "fees": [
           {
@@ -4280,7 +4280,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "292.41"
+        "grandTotal": "292.37"
       },
       "pricingOptions": {
         "fareType": [
@@ -4298,7 +4298,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "292.41",
+            "total": "292.37",
             "base": "126.00"
           },
           "fareDetailsBySegment": [
@@ -4604,8 +4604,8 @@
       "nonHomogeneous": false,
       "oneWay": false,
       "isUpsellOffer": false,
-      "lastTicketingDate": "2025-05-16",
-      "lastTicketingDateTime": "2025-05-16",
+      "lastTicketingDate": "2025-05-17",
+      "lastTicketingDateTime": "2025-05-17",
       "numberOfBookableSeats": 9,
       "itineraries": [
         {
@@ -4715,7 +4715,7 @@
       ],
       "price": {
         "currency": "EUR",
-        "total": "297.42",
+        "total": "297.38",
         "base": "120.00",
         "fees": [
           {
@@ -4727,7 +4727,7 @@
             "type": "TICKETING"
           }
         ],
-        "grandTotal": "297.42"
+        "grandTotal": "297.38"
       },
       "pricingOptions": {
         "fareType": [
@@ -4745,7 +4745,7 @@
           "travelerType": "ADULT",
           "price": {
             "currency": "EUR",
-            "total": "297.42",
+            "total": "297.38",
             "base": "120.00"
           },
           "fareDetailsBySegment": [

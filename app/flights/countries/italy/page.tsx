@@ -307,10 +307,19 @@ export default function ItalyPage() {
                             View Details
                           </Link>
                         </Button>
-                        <Button asChild>
-                          <Link href="/enquire">
-                            Enquire Now
-                          </Link>
+                        <Button 
+                          onClick={() => {
+                            const queryParams = new URLSearchParams({
+                              origin: outbound.departure.iataCode,
+                              destination: outbound.arrival.iataCode,
+                              departureDate: outboundDateTime.fullDate,
+                              returnDate: returnFlight ? formatDateTime(returnFlight.departure.at).fullDate : ''
+                            });
+                            router.push(`/contact?${queryParams.toString()}`);
+                          }}
+                        >
+                          Enquire Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>

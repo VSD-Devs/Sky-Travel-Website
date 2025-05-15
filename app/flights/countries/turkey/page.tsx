@@ -295,6 +295,25 @@ export default function TurkeyPage() {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Add Enquire Now button */}
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <Button 
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => {
+                            const queryParams = new URLSearchParams({
+                              origin: outbound.departure.iataCode,
+                              destination: outbound.arrival.iataCode,
+                              departureDate: outboundDateTime.fullDate,
+                              returnDate: returnFlight ? formatDateTime(returnFlight.departure.at).fullDate : ''
+                            });
+                            router.push(`/contact?${queryParams.toString()}`);
+                          }}
+                        >
+                          Enquire Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 );
@@ -424,14 +443,15 @@ export default function TurkeyPage() {
                     variant="outline" 
                     className="w-full text-blue-600 border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                     onClick={() => {
-                      // Set destination in search form or navigate to more specific page
-                      const searchForm = document.getElementById('flight-search-form');
-                      if (searchForm) {
-                        searchForm.scrollIntoView({ behavior: 'smooth' });
-                      }
+                      const queryParams = new URLSearchParams({
+                        destinationCity: destination.name,
+                        destination: destination.code
+                      });
+                      router.push(`/contact?${queryParams.toString()}`);
                     }}
                   >
-                    Find Flights to {destination.name}
+                    Enquire Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </CardContent>
               </Card>
