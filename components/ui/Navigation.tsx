@@ -199,13 +199,20 @@ export default function Navigation() {
         <div className="pt-24 px-6 h-full overflow-y-auto">
           <nav className="space-y-6">
             {/* Flights section at the top of mobile menu */}
-            <div className="mb-6">
+            <div className="mb-6 space-y-3">
               <Link 
                 href="/flights" 
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="block px-4 py-3 text-center bg-blue-50 text-blue-800 font-medium rounded-lg transition-colors border border-blue-200 hover:bg-blue-100"
               >
                 All Flights
+              </Link>
+              <Link 
+                href="/api/destination-flights" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block px-4 py-3 text-center bg-blue-600 text-white font-medium rounded-lg transition-colors border border-blue-700 hover:bg-blue-700"
+              >
+                API Flights
               </Link>
             </div>
           
