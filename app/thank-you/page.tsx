@@ -85,11 +85,6 @@ export default function ThankYouPage() {
                 Return to Homepage
               </Button>
             </Link>
-            <Link href="/destinations">
-              <Button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
-                Explore Destinations
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
