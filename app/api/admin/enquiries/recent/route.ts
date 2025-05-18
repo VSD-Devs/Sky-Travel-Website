@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
   try {
@@ -25,14 +23,13 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json(recentEnquiries);
+    // Ensure we always return an array even if there's an error
+    const safeEnquiries = Array.isArray(recentEnquiries) ? recentEnquiries : [];
+
+    return NextResponse.json(safeEnquiries);
   } catch (error) {
     console.error('Error fetching recent enquiries:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch recent enquiries' },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    // Return an empty array instead of an error to prevent frontend crashes
+    return NextResponse.json([]);
   }
 } 

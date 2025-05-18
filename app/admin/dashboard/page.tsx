@@ -20,7 +20,8 @@ import {
   Calendar,
   MapPin,
   User,
-  PlaneTakeoff
+  PlaneTakeoff,
+  RefreshCw
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -64,43 +65,85 @@ export default function AdminDashboard() {
   const [recentEnquiries, setRecentEnquiries] = useState<Enquiry[]>([]);
   const [recentTripPlans, setRecentTripPlans] = useState<TripPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   
+  const fetchDashboardData = async () => {
+    try {
+      if (refreshing) return; // Prevent multiple simultaneous refreshes
+      setRefreshing(true);
+      
+      // Fetch stats
+      const statsResponse = await fetch('/api/admin/stats');
+      const statsData = await statsResponse.json();
+      
+      // Fetch trip plan stats
+      const tripPlanStatsResponse = await fetch('/api/admin/trip-plans/stats');
+      const tripPlanStatsData = await tripPlanStatsResponse.json();
+      
+      // Fetch recent enquiries
+      const enquiriesResponse = await fetch('/api/admin/enquiries/recent');
+      const enquiriesData = await enquiriesResponse.json();
+      
+      // Fetch recent trip plans
+      const tripPlansResponse = await fetch('/api/admin/trip-plans/recent');
+      const tripPlansData = await tripPlansResponse.json();
+      
+      setStats({
+        ...statsData,
+        totalTripPlans: tripPlanStatsData.totalTripPlans || 0,
+        pendingTripPlans: tripPlanStatsData.pendingTripPlans || 0
+      });
+
+      // Transform raw enquiry data into the expected format for the UI
+      const formattedEnquiries = Array.isArray(enquiriesData) 
+        ? enquiriesData.map(enquiry => ({
+            id: enquiry.id || 'unknown',
+            customerName: enquiry.firstName && enquiry.lastName 
+              ? `${enquiry.firstName} ${enquiry.lastName}`
+              : 'Unknown Customer',
+            email: enquiry.email || 'No email provided',
+            subject: enquiry.type || 'General Enquiry',
+            status: enquiry.status || 'NEW',
+            date: enquiry.createdAt ? new Date(enquiry.createdAt) : new Date()
+          }))
+        : [];
+      
+      // Transform raw trip plan data into the expected format
+      const formattedTripPlans = Array.isArray(tripPlansData) 
+        ? tripPlansData.map(plan => ({
+            id: plan.id || 'unknown',
+            destination: plan.destination || 'Unknown Destination',
+            customerName: plan.customerName || 'Unknown Customer',
+            customerEmail: plan.customerEmail || 'No email provided',
+            departureDate: plan.departureDate ? new Date(plan.departureDate) : new Date(),
+            status: plan.status || 'PENDING',
+            createdAt: plan.createdAt ? new Date(plan.createdAt) : new Date()
+          }))
+        : [];
+      
+      setRecentEnquiries(formattedEnquiries);
+      setRecentTripPlans(formattedTripPlans);
+      
+      console.log('Dashboard data refreshed successfully');
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+  
+  // Initial data fetch
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch stats
-        const statsResponse = await fetch('/api/admin/stats');
-        const statsData = await statsResponse.json();
-        
-        // Fetch trip plan stats
-        const tripPlanStatsResponse = await fetch('/api/admin/trip-plans/stats');
-        const tripPlanStatsData = await tripPlanStatsResponse.json();
-        
-        // Fetch recent enquiries
-        const enquiriesResponse = await fetch('/api/admin/enquiries/recent');
-        const enquiriesData = await enquiriesResponse.json();
-        
-        // Fetch recent trip plans
-        const tripPlansResponse = await fetch('/api/admin/trip-plans/recent');
-        const tripPlansData = await tripPlansResponse.json();
-        
-        setStats({
-          ...statsData,
-          totalTripPlans: tripPlanStatsData.totalTripPlans || 0,
-          pendingTripPlans: tripPlanStatsData.pendingTripPlans || 0
-        });
-        setRecentEnquiries(enquiriesData || []);
-        setRecentTripPlans(tripPlansData || []);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchDashboardData();
+    
+    // Set up auto-refresh every 60 seconds
+    const refreshInterval = setInterval(() => {
+      fetchDashboardData();
+    }, 60000);
+    
+    // Clear interval on component unmount
+    return () => clearInterval(refreshInterval);
   }, []);
   
   const getStatusBadge = (status: string) => {
@@ -126,6 +169,15 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={fetchDashboardData}
+              disabled={refreshing}
+              className="mr-2"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
             <Button variant="outline" onClick={() => router.push('/admin/holidays/new')}>
               <Plus className="mr-2 h-4 w-4" />
               New Holiday
@@ -285,7 +337,7 @@ export default function AdminDashboard() {
             <CardContent>
               {loading ? (
                 <div className="text-center py-4">Loading...</div>
-              ) : recentEnquiries.length === 0 ? (
+              ) : !Array.isArray(recentEnquiries) || recentEnquiries.length === 0 ? (
                 <div className="text-center py-4 text-gray-500">No recent enquiries</div>
               ) : (
                 <div className="space-y-4">
@@ -293,14 +345,14 @@ export default function AdminDashboard() {
                     <div key={enquiry.id} className="border-b pb-4 last:border-0 last:pb-0">
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-medium">{enquiry.customerName}</div>
-                          <div className="text-sm text-gray-500 mt-1">{enquiry.subject}</div>
+                          <div className="font-medium">{enquiry.customerName || 'Unknown Customer'}</div>
+                          <div className="text-sm text-gray-500 mt-1">{enquiry.subject || 'No Subject'}</div>
                         </div>
-                        <div>{getStatusBadge(enquiry.status)}</div>
+                        <div>{getStatusBadge(enquiry.status || 'UNKNOWN')}</div>
                       </div>
                       <div className="flex items-center mt-2 text-sm text-gray-500">
                         <Calendar className="h-3 w-3 mr-1" />
-                        <span>{formatDate(enquiry.date)}</span>
+                        <span>{enquiry.date ? formatDate(enquiry.date) : 'Unknown date'}</span>
                       </div>
                     </div>
                   ))}
@@ -328,7 +380,7 @@ export default function AdminDashboard() {
             <CardContent>
               {loading ? (
                 <div className="text-center py-4">Loading...</div>
-              ) : recentTripPlans.length === 0 ? (
+              ) : !Array.isArray(recentTripPlans) || recentTripPlans.length === 0 ? (
                 <div className="text-center py-4 text-gray-500">No recent trip plans</div>
               ) : (
                 <div className="space-y-4">
@@ -336,17 +388,17 @@ export default function AdminDashboard() {
                     <div key={plan.id} className="border-b pb-4 last:border-0 last:pb-0">
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-medium">{plan.customerName}</div>
+                          <div className="font-medium">{plan.customerName || 'Unknown Customer'}</div>
                           <div className="flex items-center text-sm text-gray-500 mt-1">
                             <MapPin className="h-3 w-3 mr-1" />
-                            {plan.destination}
+                            {plan.destination || 'Unknown Destination'}
                           </div>
                         </div>
-                        <div>{getStatusBadge(plan.status)}</div>
+                        <div>{getStatusBadge(plan.status || 'UNKNOWN')}</div>
                       </div>
                       <div className="flex items-center mt-2 text-sm text-gray-500">
                         <Calendar className="h-3 w-3 mr-1" />
-                        <span>Travel date: {formatDate(plan.departureDate)}</span>
+                        <span>Travel date: {plan.departureDate ? formatDate(plan.departureDate) : 'Unknown date'}</span>
                       </div>
                     </div>
                   ))}

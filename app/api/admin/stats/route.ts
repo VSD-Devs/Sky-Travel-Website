@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
   try {
@@ -17,16 +15,28 @@ export async function GET() {
       );
     }
 
-    // Get counts from database
-    const [totalEnquiries, newEnquiries, totalHolidays] = await Promise.all([
-      prisma.enquiry.count(),
-      prisma.enquiry.count({
+    // Get enquiry stats
+    let totalEnquiries = 0;
+    let newEnquiries = 0;
+    let totalHolidays = 0;
+
+    try {
+      // Count all enquiries
+      totalEnquiries = await prisma.enquiry.count();
+      
+      // Count new enquiries
+      newEnquiries = await prisma.enquiry.count({
         where: {
           status: 'NEW'
         }
-      }),
-      prisma.holiday.count()
-    ]);
+      });
+      
+      // Count all holidays
+      totalHolidays = await prisma.holiday.count();
+    } catch (dbError) {
+      console.error('Database error when fetching stats:', dbError);
+      // Continue with zeros instead of failing completely
+    }
 
     return NextResponse.json({
       totalEnquiries,
@@ -34,12 +44,12 @@ export async function GET() {
       totalHolidays
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard statistics' },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    console.error('Error fetching admin stats:', error);
+    // Return zeros instead of error to prevent frontend crashes
+    return NextResponse.json({
+      totalEnquiries: 0,
+      newEnquiries: 0,
+      totalHolidays: 0
+    });
   }
 } 

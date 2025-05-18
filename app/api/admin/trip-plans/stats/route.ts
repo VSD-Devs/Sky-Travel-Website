@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
   try {
@@ -13,15 +11,24 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get total count of trip plans
-    const totalTripPlans = await prisma.tripPlan.count();
+    // Initialize with safe defaults
+    let totalTripPlans = 0;
+    let pendingTripPlans = 0;
 
-    // Get count of pending trip plans
-    const pendingTripPlans = await prisma.tripPlan.count({
-      where: {
-        status: 'PENDING',
-      },
-    });
+    try {
+      // Get total count of trip plans
+      totalTripPlans = await prisma.tripPlan.count();
+
+      // Get count of pending trip plans
+      pendingTripPlans = await prisma.tripPlan.count({
+        where: {
+          status: 'PENDING',
+        },
+      });
+    } catch (dbError) {
+      console.error('Database error when fetching trip plan stats:', dbError);
+      // Continue with zeros instead of failing completely
+    }
 
     return NextResponse.json({
       totalTripPlans,
@@ -29,9 +36,10 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching trip plan stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch trip plan statistics' },
-      { status: 500 }
-    );
+    // Return zeros instead of error to prevent frontend crashes
+    return NextResponse.json({
+      totalTripPlans: 0,
+      pendingTripPlans: 0,
+    });
   }
 } 

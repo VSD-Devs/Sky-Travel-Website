@@ -7,22 +7,25 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // Model for storing contact form enquiries
 model Enquiry {
-  id        String   @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String
-  phone     String?
-  message   String
-  status    EnquiryStatus @default(NEW)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String       @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  message       String
+  type          String       @default("GENERAL")
+  flightDetails String?
+  holidayDetails String?
+  packageDetails String?
+  status        EnquiryStatus @default(NEW)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 // Status of enquiries

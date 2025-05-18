@@ -210,7 +210,7 @@ export default function PopularFlights() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedFlights.map((flight) => {
+            {displayedFlights.map((flight, index) => {
               // Get outbound flight (first itinerary)
               const outboundSegment = flight.itineraries[0]?.segments[0];
               
@@ -239,7 +239,7 @@ export default function PopularFlights() {
               const destinationDisplay = formatAirportDisplay(outboundSegment.arrival.iataCode);
               
               return (
-                <Card key={flight.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-transparent hover:border-blue-100">
+                <Card key={`flight-${flight.id}-${index}`} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-transparent hover:border-blue-100">
                   <div className="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
                     <div>
                       <h3 className="font-bold text-lg">{destinationDisplay.split('(')[0].trim()}</h3>

@@ -13,26 +13,57 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.error('Missing credentials');
           throw new Error('Email and password are required');
         }
 
         try {
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email,
-            },
-          });
+          console.log(`Attempting to authenticate user: ${credentials.email}`);
+          
+          // Test database connection first
+          try {
+            await prisma.$connect();
+            console.log('Database connection successful');
+          } catch (connError) {
+            console.error('Database connection error:', connError);
+            throw new Error(`Database connection failed: ${connError.message}`);
+          }
+          
+          // Try to find the user
+          let user;
+          try {
+            user = await prisma.user.findUnique({
+              where: {
+                email: credentials.email,
+              },
+            });
+            console.log('User lookup result:', user ? 'User found' : 'User not found');
+          } catch (lookupError) {
+            console.error('User lookup error:', lookupError);
+            throw new Error(`User lookup failed: ${lookupError.message}`);
+          }
 
           if (!user) {
+            console.error('User not found');
             throw new Error('User not found');
           }
 
-          const isPasswordValid = await compare(credentials.password, user.password);
+          // Verify password
+          let isPasswordValid;
+          try {
+            isPasswordValid = await compare(credentials.password, user.password);
+            console.log('Password validation result:', isPasswordValid ? 'Valid' : 'Invalid');
+          } catch (passwordError) {
+            console.error('Password comparison error:', passwordError);
+            throw new Error(`Password validation failed: ${passwordError.message}`);
+          }
 
           if (!isPasswordValid) {
+            console.error('Invalid password');
             throw new Error('Invalid password');
           }
 
+          console.log('Authentication successful');
           return {
             id: user.id,
             name: user.name,
@@ -42,6 +73,9 @@ export const authOptions: NextAuthOptions = {
         } catch (error) {
           console.error('Authentication error:', error);
           throw error;
+        } finally {
+          // Always disconnect
+          await prisma.$disconnect();
         }
       },
     }),
@@ -70,7 +104,7 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  debug: process.env.NODE_ENV !== 'production', // Enable debug in development
+  debug: true, // Enable debug mode to see more logs
   secret: process.env.NEXTAUTH_SECRET || 'your-fallback-secret-key',
   cookies: {
     sessionToken: {

@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
   try {
@@ -31,12 +29,13 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(recentTripPlans);
+    // Ensure we always return an array even if there's an error
+    const safeTripPlans = Array.isArray(recentTripPlans) ? recentTripPlans : [];
+
+    return NextResponse.json(safeTripPlans);
   } catch (error) {
     console.error('Error fetching recent trip plans:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch recent trip plans' },
-      { status: 500 }
-    );
+    // Return an empty array instead of an error to prevent frontend crashes
+    return NextResponse.json([]);
   }
 } 

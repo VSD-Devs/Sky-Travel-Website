@@ -85,5 +85,8 @@
   "devDependencies": {
     "@types/uuid": "^9.0.8",
     "ts-node": "^10.9.2"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }
