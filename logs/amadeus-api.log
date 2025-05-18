@@ -331,3 +331,5 @@
 {"timestamp":"2025-05-15T23:28:35.520Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [0a693954]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
 {"timestamp":"2025-05-15T23:28:37.866Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [f9db0af2]","details":{"url":"http://localhost:3000/api/popular-flights"}}
 {"timestamp":"2025-05-15T23:28:37.869Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [f9db0af2]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}
+{"timestamp":"2025-05-18T08:13:03.502Z","level":"INFO","source":"popular-flights-api","message":"Popular flights request [64bec527]","details":{"url":"http://localhost:3000/api/popular-flights"}}
+{"timestamp":"2025-05-18T08:13:11.020Z","level":"INFO","source":"popular-flights-api","message":"Popular flights retrieved [64bec527]","details":{"resultCount":18,"isStaticData":false,"source":"amadeus-api"}}

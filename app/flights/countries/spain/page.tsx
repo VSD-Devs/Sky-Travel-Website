@@ -246,7 +246,12 @@ export default function SpainPage() {
                           </p>
                         </div>
                         <div className="mt-4 md:mt-0">
-                          <span className="text-3xl font-bold text-blue-600">£{parseFloat(flight.price.total).toFixed(2)}</span>
+                          <span className="text-3xl font-bold text-blue-600">
+                            {new Intl.NumberFormat('en-GB', {
+                              style: 'currency',
+                              currency: 'GBP'
+                            }).format(parseFloat(flight.price.total))}
+                          </span>
                           <span className="text-gray-500 text-sm ml-1">per person</span>
                         </div>
                       </div>

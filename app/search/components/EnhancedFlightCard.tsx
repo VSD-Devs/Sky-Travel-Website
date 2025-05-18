@@ -121,7 +121,7 @@ export default function EnhancedFlightCard({
           <div className="text-xl font-bold">
             {new Intl.NumberFormat('en-GB', {
               style: 'currency',
-              currency: flight.price.currency || 'GBP'
+              currency: 'GBP'
             }).format(parseFloat(flight.price.total))}
           </div>
         </div>
@@ -326,7 +326,7 @@ export default function EnhancedFlightCard({
                 <span>
                   {new Intl.NumberFormat('en-GB', {
                     style: 'currency',
-                    currency: flight.price.currency || 'GBP'
+                    currency: 'GBP'
                   }).format(parseFloat(flight.price.base || '0'))}
                 </span>
               </div>
@@ -336,7 +336,7 @@ export default function EnhancedFlightCard({
                 <span>
                   {new Intl.NumberFormat('en-GB', {
                     style: 'currency',
-                    currency: flight.price.currency || 'GBP'
+                    currency: 'GBP'
                   }).format(
                     parseFloat(flight.price.total) - parseFloat(flight.price.base || '0')
                   )}
@@ -350,7 +350,7 @@ export default function EnhancedFlightCard({
                 <span>
                   {new Intl.NumberFormat('en-GB', {
                     style: 'currency',
-                    currency: flight.price.currency || 'GBP'
+                    currency: 'GBP'
                   }).format(parseFloat(flight.price.total))}
                 </span>
               </div>

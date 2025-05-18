@@ -417,13 +417,23 @@ export default function FlightDetail() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span>Base fare</span>
-                  <span>£{parseFloat(flight.price.base).toFixed(2)}</span>
+                  <span>
+                    {new Intl.NumberFormat('en-GB', {
+                      style: 'currency',
+                      currency: 'GBP'
+                    }).format(parseFloat(flight.price.base))}
+                  </span>
                 </div>
                 
                 {flight.price.fees?.map((fee, idx) => (
                   <div key={idx} className="flex justify-between text-sm text-muted-foreground">
                     <span>{fee.type}</span>
-                    <span>£{parseFloat(fee.amount).toFixed(2)}</span>
+                    <span>
+                      {new Intl.NumberFormat('en-GB', {
+                        style: 'currency',
+                        currency: 'GBP'
+                      }).format(parseFloat(fee.amount))}
+                    </span>
                   </div>
                 ))}
                 
@@ -431,7 +441,12 @@ export default function FlightDetail() {
                 
                 <div className="flex justify-between font-bold">
                   <span>Total per person</span>
-                  <span className="text-primary">£{parseFloat(flight.price.total).toFixed(2)}</span>
+                  <span className="text-primary">
+                    {new Intl.NumberFormat('en-GB', {
+                      style: 'currency',
+                      currency: 'GBP'
+                    }).format(parseFloat(flight.price.total))}
+                  </span>
                 </div>
               </div>
             </CardContent>

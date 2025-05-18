@@ -246,7 +246,12 @@ export default function PopularFlights() {
                       <div className="text-sm opacity-90">Return Flight</div>
                     </div>
                     <div className="font-medium text-white">
-                      <span className="text-lg font-bold">€{parseFloat(flight.price.total).toFixed(2)}</span>
+                      <span className="text-lg font-bold">
+                        {new Intl.NumberFormat('en-GB', {
+                          style: 'currency',
+                          currency: 'GBP'
+                        }).format(parseFloat(flight.price.total))}
+                      </span>
                     </div>
                   </div>
                   <CardContent className="p-6">
