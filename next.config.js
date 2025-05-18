@@ -10,9 +10,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore TypeScript errors to complete the build
   },
-  experimental: {
-    legacyBrowsers: false,
-  },
   async headers() {
     return [
       {

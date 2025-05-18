@@ -3,6 +3,8 @@ import Amadeus from 'amadeus';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 // Initialize Amadeus client with production environment
 const amadeus = new Amadeus({
   clientId: process.env.AMADEUS_CLIENT_ID,

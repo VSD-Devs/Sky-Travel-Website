@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { EnquiryStatus } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to check if user is authenticated
 async function isAuthenticated() {
   const session = await getServerSession();
