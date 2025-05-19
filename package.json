@@ -9,8 +9,12 @@
     "lint": "next lint",
     "seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "node scripts/test-db-connection.js && prisma generate && node scripts/setup-vercel-db.js && next build",
-    "test-db": "node scripts/test-db-connection.js"
+    "vercel-build": "node scripts/test-db-connection.js && prisma generate && node scripts/setup-production-db.js && next build",
+    "test-db": "node scripts/test-db-connection.js",
+    "db:reset": "node scripts/reset-production-db.js",
+    "db:setup": "node scripts/setup-production-db.js",
+    "db:push": "prisma db push --accept-data-loss",
+    "db:clean-migrations": "node scripts/clean-migrations.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
