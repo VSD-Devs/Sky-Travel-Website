@@ -23,6 +23,22 @@ CACHE_DURATION_DAYS=3
 3. Configure your Supabase database first
 4. Deploy your project
 
+## Important Changes to Fix Deployment Issues
+
+This codebase includes several fixes for common deployment issues:
+
+1. **Fixed "prepared statement already exists" error**
+   - Added a custom database helper (`lib/vercel-db-helper.js`) that properly manages connections
+   - Each database operation uses a fresh connection to avoid statement conflicts
+
+2. **Optimized database connection handling**
+   - All database operations use proper connection/disconnection cycles
+   - Added error handling for database operations
+
+3. **Improved build process**
+   - Modified `vercel-build` script to ensure proper database setup
+   - Added better error reporting during deployment
+
 ## Troubleshooting Database Connection Issues
 
 If you encounter database connection errors during deployment:

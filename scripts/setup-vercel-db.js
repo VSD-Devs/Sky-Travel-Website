@@ -1,6 +1,6 @@
 // Setup script for Vercel Postgres database
-const { PrismaClient } = require('@prisma/client');
 const { execSync } = require('child_process');
+const { withPrisma, listTables } = require('../lib/vercel-db-helper');
 
 async function setupVercelDatabase() {
   console.log('Setting up database for Vercel deployment...');
@@ -30,47 +30,38 @@ async function setupVercelDatabase() {
       console.log('Schema push completed ✓');
     }
     
-    // 3. Connect to the database to verify it's working
-    console.log('\nVerifying database connection...');
-    const prisma = new PrismaClient();
-    
-    await prisma.$connect();
-    console.log('Database connection successful ✓');
-    
-    // 4. Check if tables exist
+    // 3. Check if tables exist using our helper function
     console.log('\nChecking database tables...');
-    const tables = await prisma.$queryRaw`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-    `;
+    const tables = await listTables();
     
     console.log('Tables in database:');
     tables.forEach(table => console.log(`- ${table.table_name}`));
     
-    // 5. Basic data seed to ensure at least one admin user exists
-    console.log('\nChecking for admin user...');
-    const userCount = await prisma.user.count();
-    
-    if (userCount === 0) {
-      console.log('No users found. Creating default admin user...');
+    // 4. Basic data seed to ensure at least one admin user exists
+    // Using withPrisma helper to avoid prepared statement conflicts
+    await withPrisma(async (prisma) => {
+      console.log('\nChecking for admin user...');
+      const userCount = await prisma.user.count();
       
-      // Create a default admin user
-      await prisma.user.create({
-        data: {
-          name: 'Admin',
-          email: 'admin@skylimittravels.co.uk',
-          password: '$2a$10$CwTycUXWue0Thq9StjUM0uQxTmrjFPGa.Msf0FbE3EFZz5ZlIH2gK', // Admin123!
-          role: 'ADMIN'
-        }
-      });
-      
-      console.log('Default admin user created ✓');
-    } else {
-      console.log(`Found ${userCount} existing users in database`);
-    }
+      if (userCount === 0) {
+        console.log('No users found. Creating default admin user...');
+        
+        // Create a default admin user
+        await prisma.user.create({
+          data: {
+            name: 'Admin',
+            email: 'admin@skylimittravels.co.uk',
+            password: '$2a$10$CwTycUXWue0Thq9StjUM0uQxTmrjFPGa.Msf0FbE3EFZz5ZlIH2gK', // Admin123!
+            role: 'ADMIN'
+          }
+        });
+        
+        console.log('Default admin user created ✓');
+      } else {
+        console.log(`Found ${userCount} existing users in database`);
+      }
+    });
     
-    await prisma.$disconnect();
     console.log('\nDatabase setup complete! ✓');
     return true;
     

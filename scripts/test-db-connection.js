@@ -1,5 +1,5 @@
 // Database connection test script for Vercel
-const { PrismaClient } = require('@prisma/client');
+const { withPrisma } = require('../lib/vercel-db-helper');
 
 // Display environment info
 const logEnvironmentInfo = () => {
@@ -41,26 +41,19 @@ const testConnection = async () => {
     // Log the environment first
     logEnvironmentInfo();
     
-    // Create a new Prisma client
-    const prisma = new PrismaClient({
-      errorFormat: 'pretty',
+    // Test connection using our helper function
+    return await withPrisma(async (prisma) => {
+      // Try to connect
+      console.log('\nAttempting to connect to database...');
+      console.log('Successfully connected to database! ✓');
+      
+      // Test a simple query
+      console.log('\nExecuting test query...');
+      const result = await prisma.$queryRawUnsafe('SELECT 1 as test');
+      console.log(`Query result: ${JSON.stringify(result)}`);
+      
+      return true;
     });
-    
-    // Try to connect
-    console.log('\nAttempting to connect to database...');
-    await prisma.$connect();
-    console.log('Successfully connected to database! ✓');
-    
-    // Test a simple query
-    console.log('\nExecuting test query...');
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
-    console.log(`Query result: ${JSON.stringify(result)}`);
-    
-    // Disconnect
-    await prisma.$disconnect();
-    console.log('Disconnected from database');
-    
-    return true;
   } catch (error) {
     console.error('\n=== DATABASE CONNECTION ERROR ===');
     console.error(`Error type: ${error.name}`);

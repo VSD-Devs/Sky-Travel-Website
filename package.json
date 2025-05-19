@@ -9,7 +9,7 @@
     "lint": "next lint",
     "seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "node scripts/test-db-connection.js && node scripts/setup-vercel-db.js && prisma migrate deploy && next build",
+    "vercel-build": "node scripts/test-db-connection.js && prisma generate && node scripts/setup-vercel-db.js && next build",
     "test-db": "node scripts/test-db-connection.js"
   },
   "dependencies": {
