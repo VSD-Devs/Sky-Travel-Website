@@ -1,6 +1,6 @@
 {
   "currentMonth": "2025-05",
-  "totalCalls": 152,
+  "totalCalls": 153,
   "records": [
     {
       "timestamp": 1746712219951,
@@ -980,6 +980,12 @@
       "ip": "unknown",
       "endpoint": "popular-flights",
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp": 1747683545056,
+      "ip": "unknown",
+      "endpoint": "popular-flights",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
     }
   ]
 }

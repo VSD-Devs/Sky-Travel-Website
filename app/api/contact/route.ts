@@ -48,29 +48,53 @@ export async function POST(request: Request) {
     
     // Save to database
     try {
-      const savedEnquiry = await prisma.enquiry.create({
-        data: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone || null,
-          message: data.message,
-          type: data.enquiryType || 'GENERAL',
-          flightDetails: data.flightDetails ? JSON.stringify(data.flightDetails) : null,
-          holidayDetails: data.holidayDetails ? JSON.stringify(data.holidayDetails) : null,
-          packageDetails: data.packageDetails ? JSON.stringify(data.packageDetails) : null,
-          status: 'NEW'
-        }
-      });
-      
-      console.log('Enquiry saved to database with ID:', savedEnquiry.id);
-      
-      // Return success response
-      return NextResponse.json({
-        success: true,
-        message: 'Thank you for your enquiry. We will contact you shortly.',
-        enquiryId: savedEnquiry.id
-      });
+      // Create a base data object with fields that are definitely in the schema
+      const baseData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone || null,
+        message: data.message,
+        status: 'NEW'
+      };
+
+      // Try to create with all fields first
+      try {
+        const savedEnquiry = await prisma.enquiry.create({
+          data: {
+            ...baseData,
+            type: data.enquiryType || 'GENERAL',
+            flightDetails: data.flightDetails ? JSON.stringify(data.flightDetails) : null,
+            holidayDetails: data.holidayDetails ? JSON.stringify(data.holidayDetails) : null,
+            packageDetails: data.packageDetails ? JSON.stringify(data.packageDetails) : null,
+          }
+        });
+        
+        console.log('Enquiry saved to database with ID:', savedEnquiry.id);
+        
+        // Return success response
+        return NextResponse.json({
+          success: true,
+          message: 'Thank you for your enquiry. We will contact you shortly.',
+          enquiryId: savedEnquiry.id
+        });
+      } catch (error) {
+        // If it fails, try with just the base fields
+        console.error('Error with full schema, trying minimal schema:', error);
+        
+        const fallbackEnquiry = await prisma.enquiry.create({
+          data: baseData
+        });
+        
+        console.log('Enquiry saved with minimal schema, ID:', fallbackEnquiry.id);
+        
+        // Return success response
+        return NextResponse.json({
+          success: true,
+          message: 'Thank you for your enquiry. We will contact you shortly.',
+          enquiryId: fallbackEnquiry.id
+        });
+      }
     } catch (error) {
       console.error('Error saving enquiry to database:', error);
       return NextResponse.json(

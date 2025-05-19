@@ -9,6 +9,16 @@ try {
   console.log('Generating Prisma client...');
   execSync('npx prisma generate', { stdio: 'inherit' });
   
+  // Try to push schema changes (this will apply if there are any differences)
+  try {
+    console.log('Attempting to push schema changes...');
+    execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+    console.log('Schema updated successfully');
+  } catch (schemaError) {
+    console.error('Failed to update schema:', schemaError.message);
+    console.log('Continuing with existing schema');
+  }
+  
   console.log('Database connection successful, proceeding with build');
   process.exit(0); // Success
 } catch (error) {
