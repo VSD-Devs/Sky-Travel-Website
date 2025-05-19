@@ -1,7 +1,6 @@
-console.log('Checking database connectivity...');
+console.log('Checking Supabase database connectivity and generating client...');
 
-// Try to validate the current schema against the database
-// If it succeeds, we know the database is reachable
+// Try to generate Prisma client and apply migrations
 const { execSync } = require('child_process');
 
 try {
@@ -9,21 +8,23 @@ try {
   console.log('Generating Prisma client...');
   execSync('npx prisma generate', { stdio: 'inherit' });
   
-  // Try to push schema changes (this will apply if there are any differences)
+  // Push the schema to the database
   try {
-    console.log('Attempting to push schema changes...');
-    execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-    console.log('Schema updated successfully');
-  } catch (schemaError) {
-    console.error('Failed to update schema:', schemaError.message);
-    console.log('Continuing with existing schema');
+    console.log('Applying database schema to Supabase...');
+    // We use db push for simplicity - for production you might want to use migrations later
+    execSync('npx prisma db push', { stdio: 'inherit' });
+    console.log('✅ Schema applied successfully');
+  } catch (dbError) {
+    console.error('Warning: Error while applying schema:', dbError.message);
+    console.log('Continuing build process despite schema push error');
+    // This allows the build to continue even if schema push fails
   }
   
-  console.log('Database connection successful, proceeding with build');
+  console.log('✅ Prisma client generated successfully, proceeding with build');
   process.exit(0); // Success
 } catch (error) {
-  console.error('Database connection failed:', error.message);
-  console.log('Proceeding with build without database connection...');
-  // We don't fail the build if DB is unavailable - this allows static pages to still be built
+  console.error('Database setup had an issue:', error.message);
+  console.log('Proceeding with build anyway...');
+  // We don't fail the build if DB setup has issues
   process.exit(0);
 } 
