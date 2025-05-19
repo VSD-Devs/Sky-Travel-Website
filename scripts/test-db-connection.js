@@ -1,16 +1,10 @@
-// Script to test database connection
-console.log('Testing database connection...');
+// Script to test Supabase database connection
+console.log('Testing Supabase database connection...');
 
 const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const path = require('path');
 
 // Function to parse and sanitize a connection URL for logging
 function sanitizeUrl(url) {
-  if (!url) return 'Not set';
-  if (url.startsWith('file:')) {
-    return `SQLite: ${url}`;
-  }
   try {
     const parsedUrl = new URL(url);
     return {
@@ -47,27 +41,36 @@ if (process.env.DATABASE_URL) {
   console.log('DATABASE_URL: [NOT SET]');
 }
 
-// We're going to use SQLite in production for now
-const dbPath = './prod.db';
-console.log(`Using SQLite database at ${dbPath}`);
+// Map of available connection variables
+const connectionVars = [
+  'POSTGRES_PRISMA_URL',
+  'POSTGRES_URL_NON_POOLING',
+  'POSTGRES_URL',
+  'DATABASE_URL',
+  'SUPABASE_URL'
+];
 
-// Create empty SQLite file if it doesn't exist
-if (!fs.existsSync(dbPath)) {
-  console.log('SQLite database file does not exist, creating empty file...');
-  fs.writeFileSync(dbPath, '');
-  console.log('Created empty database file');
+// Find first available connection string
+let connectionUrl = null;
+for (const varName of connectionVars) {
+  if (process.env[varName]) {
+    connectionUrl = process.env[varName];
+    console.log(`Using ${varName} for connection`);
+    break;
+  }
 }
 
-// Set up connection string for SQLite
-const connectionUrl = `file:${dbPath}`;
-console.log('Connection URL:', connectionUrl);
+if (!connectionUrl) {
+  console.error('No database connection URL found in environment variables!');
+  process.exit(1);
+}
 
 // Try to connect using direct URL
 async function testConnection() {
   try {
-    console.log('Creating Prisma client for SQLite...');
+    console.log('Creating Prisma client...');
     
-    // Create a prisma client with the SQLite URL
+    // Create a prisma client with the direct URL
     const prisma = new PrismaClient({
       datasources: {
         db: {
@@ -77,21 +80,39 @@ async function testConnection() {
     });
 
     console.log('Testing connection...');
+    // Try a simple query
+    const result = await prisma.$queryRaw`SELECT 1 as test;`;
+    console.log('Connection successful! Result:', result);
+    
+    // Try to get table information
     try {
-      // For SQLite, we just try to access the client
-      await prisma.$connect();
-      console.log('Connection successful!');
-    } catch (e) {
-      console.error('Connection error:', e);
-      return false;
+      console.log('Checking if Enquiry table exists...');
+      const tables = await prisma.$queryRaw`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';`;
+      console.log('Tables in database:', tables);
+      
+      const hasEnquiryTable = tables.some(t => t.table_name === 'Enquiry');
+      if (hasEnquiryTable) {
+        console.log('Enquiry table exists');
+      } else {
+        console.log('Enquiry table does not exist, will need to be created');
+      }
+    } catch (tableError) {
+      console.error('Error checking tables:', tableError);
     }
     
-    // Close connection
     await prisma.$disconnect();
     return true;
   } catch (error) {
-    console.error('Prisma client creation failed:', error);
+    console.error('Connection failed:', error);
     console.error('Error details:', error.message);
+    
+    if (error.message.includes('Tenant or user not found')) {
+      console.error('\n--------------------------------------------');
+      console.error('AUTHENTICATION ERROR: The database username/password is incorrect');
+      console.error('Please check your Supabase credentials and update the environment variables');
+      console.error('--------------------------------------------\n');
+    }
+    
     return false;
   }
 }
@@ -100,13 +121,6 @@ async function testConnection() {
 testConnection()
   .then(success => {
     console.log('Test completed:', success ? 'SUCCESS' : 'FAILED');
-    if (success) {
-      console.log('\n--------------------------------------------');
-      console.log('SUCCESS: SQLite database connection is working');
-      console.log('The contact form should now work in production');
-      console.log('Note: This is a temporary solution and data may be lost on redeployment');
-      console.log('--------------------------------------------\n');
-    }
     process.exit(success ? 0 : 1);
   })
   .catch(err => {
