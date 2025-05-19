@@ -44,24 +44,20 @@ const createPrismaClient = () => {
     errorFormat: 'pretty',
   });
   
-  // Add connection management middleware
+  // Add middleware for logging in all environments
   client.$use(async (params, next) => {
     const before = Date.now();
     try {
-      // Ensure we're connected
-      await client.$connect();
-      
       const result = await next(params);
       const after = Date.now();
-      
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development' || params.action === 'create') {
         console.log(`Prisma query ${params.model}.${params.action} took ${after - before}ms`);
       }
       return result;
     } catch (error) {
       const after = Date.now();
       console.error(`Prisma query ${params.model}.${params.action} failed after ${after - before}ms`);
-      console.error('Query error:', error);
+      console.error('Query params:', JSON.stringify(params, null, 2));
       throw error;
     }
   });
