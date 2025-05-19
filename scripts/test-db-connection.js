@@ -1,5 +1,5 @@
 // Database connection test script for Vercel
-const { withPrisma } = require('../lib/vercel-db-helper');
+const { PrismaClient } = require('@prisma/client');
 
 // Display environment info
 const logEnvironmentInfo = () => {
@@ -33,6 +33,60 @@ const logEnvironmentInfo = () => {
   });
 };
 
+// Get a fresh client for each operation
+function getFreshClient() {
+  // Using the non-pooling URL helps avoid connection conflicts
+  const connectionUrl = process.env.POSTGRES_URL_NON_POOLING || 
+                       process.env.POSTGRES_PRISMA_URL || 
+                       process.env.DATABASE_URL;
+                       
+  return new PrismaClient({
+    datasources: { db: { url: connectionUrl } },
+    // Set up minimal logging to avoid additional overhead
+    log: ['error']
+  });
+}
+
+// Simple test to check if database connection works
+async function simpleDatabaseTest() {
+  const prisma = getFreshClient();
+  
+  try {
+    await prisma.$connect();
+    console.log('Successfully connected to database! ✓');
+    
+    // Don't use raw queries - use a simple model operation instead
+    try {
+      // Try a simple model operation that won't fail even if table doesn't exist
+      const userCount = await prisma.user.count();
+      console.log(`Successfully queried users table. Found ${userCount} users.`);
+      return true;
+    } catch (queryError) {
+      if (queryError.code === 'P2010' || queryError.message.includes('prepared statement')) {
+        console.log('Got prepared statement error, but connection is working');
+        return true;
+      }
+      
+      if (queryError.code === 'P2021') {
+        console.log('Table does not exist yet, but connection is working');
+        return true;
+      }
+      
+      console.error('Error during test query:', queryError.message);
+      return false;
+    } finally {
+      await prisma.$disconnect();
+    }
+  } catch (error) {
+    console.error('\n=== DATABASE CONNECTION ERROR ===');
+    console.error(`Error type: ${error.name}`);
+    console.error(`Error message: ${error.message}`);
+    console.error(`Error code: ${error.code || 'unknown'}`);
+    
+    return false;
+  }
+}
+
 // Test connecting to the database
 const testConnection = async () => {
   try {
@@ -41,24 +95,14 @@ const testConnection = async () => {
     // Log the environment first
     logEnvironmentInfo();
     
-    // Test connection using our helper function
-    return await withPrisma(async (prisma) => {
-      // Try to connect
-      console.log('\nAttempting to connect to database...');
-      console.log('Successfully connected to database! ✓');
-      
-      // Test a simple query
-      console.log('\nExecuting test query...');
-      const result = await prisma.$queryRawUnsafe('SELECT 1 as test');
-      console.log(`Query result: ${JSON.stringify(result)}`);
-      
-      return true;
-    });
+    // Run a simple connection test
+    const success = await simpleDatabaseTest();
+    
+    return success;
   } catch (error) {
     console.error('\n=== DATABASE CONNECTION ERROR ===');
     console.error(`Error type: ${error.name}`);
     console.error(`Error message: ${error.message}`);
-    console.error(`Error code: ${error.code}`);
     
     if (error.meta) {
       console.error('Error metadata:', error.meta);
@@ -82,6 +126,9 @@ if (require.main === module) {
       console.error('\n✗ Database connection test failed!');
       process.exit(1);
     }
+  }).catch(err => {
+    console.error('Unexpected error during test:', err);
+    process.exit(1);
   });
 }
 

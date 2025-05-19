@@ -6,6 +6,19 @@ const { PrismaClient } = require('@prisma/client');
 const { execSync } = require('child_process');
 const { setupProductionDB } = require('./setup-production-db');
 
+// Get a fresh client for each operation
+function getFreshClient() {
+  // Using the non-pooling URL helps avoid connection conflicts
+  return new PrismaClient({
+    datasources: { 
+      db: { 
+        url: process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_PRISMA_URL
+      } 
+    },
+    log: ['error']
+  });
+}
+
 async function resetDatabase() {
   console.log('⚠️ WARNING: RESETTING PRODUCTION DATABASE ⚠️');
   console.log('This will delete ALL data in the database.');
@@ -20,13 +33,7 @@ async function resetDatabase() {
     
     // Create a fresh client using the non-pooling URL
     console.log('Connecting to database...');
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.POSTGRES_URL_NON_POOLING
-        }
-      }
-    });
+    prisma = getFreshClient();
     
     await prisma.$connect();
     console.log('Connected to database ✓');
