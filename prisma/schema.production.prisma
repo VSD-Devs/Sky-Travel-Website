@@ -3,39 +3,38 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  // Removed previewFeatures to increase compatibility
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "sqlite"
+  url      = "file:./prod.db"
 }
 
 // Model for storing contact form enquiries
 model Enquiry {
-  id              String       @id @default(uuid())
+  id              String     @id @default(uuid())
   firstName       String
   lastName        String
   email           String
   phone           String?
   message         String
-  type            String       @default("GENERAL")
+  type            String     @default("GENERAL")
   flightDetails   String?
   holidayDetails  String?
   packageDetails  String?
-  status          EnquiryStatus @default(NEW)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  status          String     @default("NEW") // Changed to String for better compatibility
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
-// Status of enquiries
-enum EnquiryStatus {
-  NEW
-  IN_PROGRESS
-  RESPONDED
-  CLOSED
-}
+// Status of enquiries - moved to String in the model for compatibility
+// enum EnquiryStatus {
+//   NEW
+//   IN_PROGRESS
+//   RESPONDED
+//   CLOSED
+// }
 
 // Model for admin users
 model User {

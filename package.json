@@ -9,7 +9,8 @@
     "lint": "next lint",
     "seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "cp prisma/schema.production.prisma prisma/schema.prisma && node scripts/check-db.js && next build"
+    "vercel-build": "node scripts/test-db-connection.js && cp prisma/schema.production.prisma prisma/schema.prisma && node scripts/check-db.js && next build",
+    "test-db": "node scripts/test-db-connection.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
