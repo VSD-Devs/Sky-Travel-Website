@@ -8,7 +8,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 // Log database connection info (sanitized)
 const logDatabaseInfo = () => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     console.log('Database configuration check:');
     // Check if we have Supabase-specific environment variables
     const hasSupabase = !!(
@@ -19,12 +19,21 @@ const logDatabaseInfo = () => {
     
     console.log(`Using Supabase connection: ${hasSupabase ? 'Yes' : 'No'}`);
     
+    // Verify database environment variables are present
+    if (!process.env.POSTGRES_PRISMA_URL && !process.env.DATABASE_URL) {
+      console.error('ERROR: No database URL found. Set POSTGRES_PRISMA_URL for Supabase or DATABASE_URL for local development.');
+    }
+    
     if (process.env.POSTGRES_PRISMA_URL) {
-      const url = new URL(process.env.POSTGRES_PRISMA_URL);
-      console.log(`Connection URL Protocol: ${url.protocol}`);
-      console.log(`Connection URL Host: ${url.host}`);
-      console.log(`Connection URL Auth: ${url.username ? '[HAS USERNAME]' : '[NO USERNAME]'}:${url.password ? '[HAS PASSWORD]' : '[NO PASSWORD]'}`);
-      console.log(`Connection URL Path: ${url.pathname}`);
+      try {
+        const url = new URL(process.env.POSTGRES_PRISMA_URL);
+        console.log(`Connection URL Protocol: ${url.protocol}`);
+        console.log(`Connection URL Host: ${url.host}`);
+        console.log(`Connection URL Auth: ${url.username ? '[HAS USERNAME]' : '[NO USERNAME]'}:${url.password ? '[HAS PASSWORD]' : '[NO PASSWORD]'}`);
+        console.log(`Connection URL Path: ${url.pathname}`);
+      } catch (error) {
+        console.error('Invalid POSTGRES_PRISMA_URL format:', error.message);
+      }
     } else {
       console.log('POSTGRES_PRISMA_URL is not defined');
     }
@@ -73,6 +82,14 @@ export const connectPrisma = async () => {
     return true;
   } catch (error) {
     console.error('Database connection failed:', error);
+    
+    // Add more detailed diagnostics for Vercel environment
+    if (process.env.VERCEL) {
+      console.error('VERCEL DEPLOYMENT ERROR: Database connection failed');
+      console.error('Check that your Supabase connection strings are correctly set in Vercel environment variables.');
+      console.error('Required variables: POSTGRES_PRISMA_URL and POSTGRES_URL_NON_POOLING');
+    }
+    
     return false;
   }
 };

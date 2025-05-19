@@ -1,4 +1,4 @@
-// This is your Prisma schema file for PRODUCTION,
+// This is your Prisma schema file for Supabase connection,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -7,8 +7,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // Connection pooling URL for Supabase
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Direct connection URL for migrations
 }
 
 // Model for storing contact form enquiries
