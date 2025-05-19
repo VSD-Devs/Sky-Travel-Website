@@ -38,12 +38,21 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setFormResponse(null);
     
-    console.log('Submitting contact form with data:', { ...data, message: data.message.substring(0, 30) + '...' });
+    console.log('Submitting contact form with data:', { 
+      ...data, 
+      message: data.message.substring(0, 30) + '...',
+      timestamp: new Date().toISOString()
+    });
 
     // Try up to 3 times to submit the form
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         console.log(`Attempt ${attempt}/3 to submit form`);
+        
+        // Add timeout to fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch('/api/contact', {
           method: 'POST',
           headers: {
@@ -53,9 +62,25 @@ export default function ContactPage() {
             ...data,
             enquiryType: 'GENERAL'
           }),
+          signal: controller.signal
         });
 
-        const result = await response.json();
+        clearTimeout(timeoutId);
+
+        // Handle non-JSON responses
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Server returned non-JSON response');
+        }
+
+        let result;
+        try {
+          result = await response.json();
+        } catch (error) {
+          console.error('Error parsing response JSON:', error);
+          throw new Error('Invalid response from server');
+        }
+
         console.log('Form submission response:', result);
 
         if (!response.ok) {
@@ -76,17 +101,28 @@ export default function ContactPage() {
       } catch (error) {
         console.error(`Error submitting form (attempt ${attempt}/3):`, error);
         
+        // Handle specific error types
+        let errorMessage = 'Our system is currently experiencing difficulties. Please try again later or contact us by phone.';
+        
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            errorMessage = 'The request timed out. Please check your internet connection and try again.';
+          } else if (error.message.includes('non-JSON response')) {
+            errorMessage = 'Received an invalid response from the server. Please try again later.';
+          } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+          }
+        }
+        
         // Only set error response on final attempt
         if (attempt === 3) {
           setFormResponse({
             status: 'error',
-            message: error instanceof Error 
-              ? error.message 
-              : 'Our system is currently experiencing difficulties. Please try again later or contact us by phone.'
+            message: errorMessage
           });
         } else {
           // Small delay before retrying
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Increasing delay between retries
         }
       }
     }
