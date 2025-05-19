@@ -14,7 +14,8 @@
     "db:reset": "node scripts/reset-production-db.js",
     "db:setup": "node scripts/setup-production-db.js",
     "db:push": "prisma db push --accept-data-loss",
-    "db:clean-migrations": "node scripts/clean-migrations.js"
+    "db:clean-migrations": "node scripts/clean-migrations.js",
+    "admin:reset-password": "node scripts/reset-admin-password.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

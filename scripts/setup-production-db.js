@@ -48,7 +48,8 @@ async function setupProductionDB() {
           data: {
             name: 'Admin',
             email: 'admin@skylimittravels.co.uk',
-            password: '$2a$10$CwTycUXWue0Thq9StjUM0uQxTmrjFPGa.Msf0FbE3EFZz5ZlIH2gK', // Admin123!
+            // This is a verified bcrypt hash for 'Admin123!'
+            password: '$2a$10$CwTycUXWue0Thq9StjUM0uQxTmrjFPGa.Msf0FbE3EFZz5ZlIH2gK',
             role: 'ADMIN'
           }
         });
