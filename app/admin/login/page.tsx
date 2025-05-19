@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('Admin123!');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const [debugInfo, setDebugInfo] = useState('');
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -27,14 +28,20 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     setDebugInfo('Starting login process...');
+    
+    // Increment login attempt counter
+    setLoginAttempts(prev => prev + 1);
 
     try {
       setDebugInfo(prev => `${prev}\nAttempting to sign in with: ${email}`);
       
+      // Add the login attempt counter to force a new request each time
+      // This helps prevent prepared statement conflicts
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
+        attempt: loginAttempts.toString(), // Force unique requests
         callbackUrl: '/admin/dashboard'
       });
 
@@ -46,6 +53,20 @@ export default function LoginPage() {
 
       if (result.error) {
         console.error('Auth error:', result.error);
+        
+        // Check for the specific prepared statement error
+        if (result.error.includes('prepared statement') || result.error.includes('42P05')) {
+          setError('Database connection issue. Please try again in a moment.');
+          
+          // Auto-retry once after a short delay
+          setTimeout(() => {
+            setDebugInfo(prev => `${prev}\nAuto-retrying login...`);
+            handleSubmit(e);
+          }, 1500);
+          
+          return;
+        }
+        
         setError(`Login failed: ${result.error}`);
         setIsLoading(false);
         return;
@@ -80,97 +101,78 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-32 h-32 relative">
-            {/* Logo */}
-            <div className="w-full h-full flex items-center justify-center bg-blue-600 rounded-full text-white text-2xl font-bold">
-              SLT
-            </div>
-          </div>
+    <div className="flex items-center justify-center min-h-screen bg-slate-100">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+        <div className="text-center">
+          <Image 
+            src="/images/logo.png" 
+            alt="Sky Limit Travels" 
+            width={150} 
+            height={50}
+            className="mx-auto"
+          />
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">Admin Login</h2>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Login
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to access the Sky Limit Travels admin panel
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-md">
-              {error}
-            </div>
-          )}
-          
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email
               </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+              />
             </div>
-
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+              />
             </div>
+          </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                  isLoading ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
-              >
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-          </form>
-          
-          {/* Debug information */}
-          {debugInfo && (
-            <div className="mt-6 p-3 bg-gray-50 text-gray-800 border border-gray-200 rounded-md">
-              <h3 className="text-sm font-medium mb-2">Debug Info:</h3>
-              <pre className="text-xs whitespace-pre-wrap break-words">
-                {debugInfo}
-              </pre>
+          {error && (
+            <div className="text-red-600 text-sm font-medium">
+              {error}
             </div>
           )}
-          
-          {/* Session status */}
-          <div className="mt-4 text-sm text-gray-600">
-            Session status: {status}
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                isLoading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </button>
           </div>
-        </div>
+        </form>
+        
+        {/* Debug info in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-8 p-4 bg-gray-100 rounded text-xs font-mono whitespace-pre-wrap">
+            {debugInfo}
+          </div>
+        )}
       </div>
     </div>
   );
