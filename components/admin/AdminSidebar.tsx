@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard,
   PackageOpen,
@@ -18,6 +19,7 @@ import {
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -28,6 +30,11 @@ export default function AdminSidebar() {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleSignOut = () => {
+    // Just navigate to the logout page which handles all signout logic
+    router.push('/admin/logout');
   };
 
   const routes = [
@@ -94,13 +101,13 @@ export default function AdminSidebar() {
 
           {/* Logout */}
           <div className="p-4 border-t border-gray-800">
-            <Link
-              href="/api/auth/signout"
-              className="flex items-center px-4 py-3 rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            <button
+              onClick={handleSignOut}
+              className="flex items-center w-full px-4 py-3 rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
             >
               <LogOut size={20} className="mr-3" />
               <span>Logout</span>
-            </Link>
+            </button>
           </div>
         </div>
       </aside>

@@ -45,8 +45,13 @@ export async function GET(request: NextRequest) {
     const adminEmail = 'admin@skylimittravels.co.uk';
     const adminPassword = 'Admin123!';
     
-    // Generate a fresh hash
-    const hashedPassword = await hash(adminPassword, 10);
+    // Use a fixed salt for consistent hashing that works across environments
+    // This is the salt from the original hash in setup-production-db.js
+    const salt = '$2a$10$CwTycUXWue0Thq9StjUM0u';
+    const hashedPassword = '$2a$10$CwTycUXWue0Thq9StjUM0uQxTmrjFPGa.Msf0FbE3EFZz5ZlIH2gK';
+    
+    // This is the hash that was originally used in setup-production-db.js
+    console.log('Using predefined hash for Admin123!');
     
     // Check if user exists
     const existingUser = await prisma.user.findUnique({

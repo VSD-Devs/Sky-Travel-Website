@@ -16,9 +16,15 @@ async function resetAdminPasswordOnProd(connectionString) {
   const password = 'Admin123!'; // Default admin password
   const email = 'admin@skylimittravels.co.uk';
   
-  // Generate a fresh bcrypt hash
-  const hashedPassword = await bcrypt.hash(password, 10);
+  // Generate a reliable hash with fixed salt
+  // This creates a consistent hash that should work across environments
+  const salt = '$2a$10$CwTycUXWue0Thq9StjUM0u';
+  const hashedPassword = await bcrypt.hash(password, salt);
   console.log('Generated hash:', hashedPassword);
+  
+  // Double-check the hash works
+  const isValid = await bcrypt.compare(password, hashedPassword);
+  console.log('Hash validation:', isValid ? 'PASSED ✓' : 'FAILED ✗');
   
   const prisma = new PrismaClient({
     datasources: {

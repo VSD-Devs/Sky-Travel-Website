@@ -6,19 +6,17 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 export default function LoginPage() {
+  // Pre-filling credentials for easy testing
   const [email, setEmail] = useState('admin@skylimittravels.co.uk');
   const [password, setPassword] = useState('Admin123!');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [debugInfo, setDebugInfo] = useState('');
   const router = useRouter();
   const { data: session, status } = useSession();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated') {
-      console.log('Already authenticated, redirecting to dashboard');
       router.push('/admin/dashboard');
     }
   }, [status, router]);
@@ -27,75 +25,29 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    setDebugInfo('Starting login process...');
     
-    // Increment login attempt counter
-    setLoginAttempts(prev => prev + 1);
-
     try {
-      setDebugInfo(prev => `${prev}\nAttempting to sign in with: ${email}`);
-      
-      // Add the login attempt counter to force a new request each time
-      // This helps prevent prepared statement conflicts
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
-        attempt: loginAttempts.toString(), // Force unique requests
-        callbackUrl: '/admin/dashboard'
       });
-
-      setDebugInfo(prev => `${prev}\nSignIn result: ${JSON.stringify(result)}`);
 
       if (!result) {
         throw new Error('No response from authentication server');
       }
 
       if (result.error) {
-        console.error('Auth error:', result.error);
-        
-        // Check for the specific prepared statement error
-        if (result.error.includes('prepared statement') || result.error.includes('42P05')) {
-          setError('Database connection issue. Please try again in a moment.');
-          
-          // Auto-retry once after a short delay
-          setTimeout(() => {
-            setDebugInfo(prev => `${prev}\nAuto-retrying login...`);
-            handleSubmit(e);
-          }, 1500);
-          
-          return;
-        }
-        
-        setError(`Login failed: ${result.error}`);
+        setError('Invalid email or password');
         setIsLoading(false);
         return;
       }
-
-      setDebugInfo(prev => `${prev}\nLogin successful, preparing to redirect...`);
       
-      // Force a session refresh
-      await fetch('/api/auth/session');
-      
-      if (result.url) {
-        // Use the URL provided by NextAuth if available
-        setDebugInfo(prev => `${prev}\nRedirecting to: ${result.url}`);
-        router.push(result.url);
-      } else {
-        // Fallback to dashboard
-        setDebugInfo(prev => `${prev}\nRedirecting to dashboard...`);
-        router.push('/admin/dashboard');
-      }
-      
-      // Additional delay to ensure the redirect happens
-      setTimeout(() => {
-        setDebugInfo(prev => `${prev}\nForce redirect after timeout`);
-        window.location.href = '/admin/dashboard';
-      }, 2000);
-      
+      // Refresh the page to trigger the redirect in useEffect
+      window.location.href = '/admin/dashboard';
     } catch (error) {
       console.error('Login error:', error);
-      setError(`Login error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setError('An error occurred during sign in. Please try again.');
       setIsLoading(false);
     }
   };
@@ -112,6 +64,9 @@ export default function LoginPage() {
             className="mx-auto"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">Admin Login</h2>
+          <p className="mt-2 text-sm text-gray-500">
+            Login with the pre-filled credentials
+          </p>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -129,6 +84,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
+                autoComplete="email"
               />
             </div>
             <div>
@@ -144,6 +100,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
+                autoComplete="current-password"
               />
             </div>
           </div>
@@ -158,21 +115,12 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
-        
-        {/* Debug info in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8 p-4 bg-gray-100 rounded text-xs font-mono whitespace-pre-wrap">
-            {debugInfo}
-          </div>
-        )}
       </div>
     </div>
   );

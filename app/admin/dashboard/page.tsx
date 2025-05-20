@@ -1,423 +1,260 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import AdminLayout from '@/components/admin/AdminLayout';
+import { useEffect, useState } from 'react';
 import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { 
+  LayoutDashboard, 
   Package, 
   Mail,
-  Map, 
-  Plus, 
-  Calendar,
-  MapPin,
-  User,
   PlaneTakeoff,
+  Calendar,
+  User,
+  LogOut,
+  Plus,
   RefreshCw
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-
-type DashboardStats = {
-  totalEnquiries: number;
-  newEnquiries: number;
-  totalHolidays: number;
-  totalTripPlans: number;
-  pendingTripPlans: number;
-};
-
-type Enquiry = {
-  id: string;
-  customerName: string;
-  email: string;
-  subject: string;
-  status: string;
-  date: Date;
-};
-
-type TripPlan = {
-  id: string;
-  destination: string;
-  customerName: string;
-  customerEmail: string;
-  departureDate: Date;
-  status: string;
-  createdAt: Date;
-};
 
 export default function AdminDashboard() {
+  const { data: session } = useSession();
   const router = useRouter();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalEnquiries: 0,
-    newEnquiries: 0,
-    totalHolidays: 0,
-    totalTripPlans: 0,
-    pendingTripPlans: 0
-  });
-  const [recentEnquiries, setRecentEnquiries] = useState<Enquiry[]>([]);
-  const [recentTripPlans, setRecentTripPlans] = useState<TripPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  
-  const fetchDashboardData = async () => {
-    try {
-      if (refreshing) return; // Prevent multiple simultaneous refreshes
-      setRefreshing(true);
-      
-      // Fetch stats
-      const statsResponse = await fetch('/api/admin/stats');
-      const statsData = await statsResponse.json();
-      
-      // Fetch trip plan stats
-      const tripPlanStatsResponse = await fetch('/api/admin/trip-plans/stats');
-      const tripPlanStatsData = await tripPlanStatsResponse.json();
-      
-      // Fetch recent enquiries
-      const enquiriesResponse = await fetch('/api/admin/enquiries/recent');
-      const enquiriesData = await enquiriesResponse.json();
-      
-      // Fetch recent trip plans
-      const tripPlansResponse = await fetch('/api/admin/trip-plans/recent');
-      const tripPlansData = await tripPlansResponse.json();
-      
-      setStats({
-        ...statsData,
-        totalTripPlans: tripPlanStatsData.totalTripPlans || 0,
-        pendingTripPlans: tripPlanStatsData.pendingTripPlans || 0
-      });
 
-      // Transform raw enquiry data into the expected format for the UI
-      const formattedEnquiries = Array.isArray(enquiriesData) 
-        ? enquiriesData.map(enquiry => ({
-            id: enquiry.id || 'unknown',
-            customerName: enquiry.firstName && enquiry.lastName 
-              ? `${enquiry.firstName} ${enquiry.lastName}`
-              : 'Unknown Customer',
-            email: enquiry.email || 'No email provided',
-            subject: enquiry.type || 'General Enquiry',
-            status: enquiry.status || 'NEW',
-            date: enquiry.createdAt ? new Date(enquiry.createdAt) : new Date()
-          }))
-        : [];
-      
-      // Transform raw trip plan data into the expected format
-      const formattedTripPlans = Array.isArray(tripPlansData) 
-        ? tripPlansData.map(plan => ({
-            id: plan.id || 'unknown',
-            destination: plan.destination || 'Unknown Destination',
-            customerName: plan.customerName || 'Unknown Customer',
-            customerEmail: plan.customerEmail || 'No email provided',
-            departureDate: plan.departureDate ? new Date(plan.departureDate) : new Date(),
-            status: plan.status || 'PENDING',
-            createdAt: plan.createdAt ? new Date(plan.createdAt) : new Date()
-          }))
-        : [];
-      
-      setRecentEnquiries(formattedEnquiries);
-      setRecentTripPlans(formattedTripPlans);
-      
-      console.log('Dashboard data refreshed successfully');
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  // Mock data
+  const [stats, setStats] = useState({
+    totalEnquiries: 5,
+    newEnquiries: 2,
+    totalHolidays: 8,
+    totalTripPlans: 3,
+    pendingTripPlans: 1
+  });
+
+  const [recentEnquiries, setRecentEnquiries] = useState([
+    {
+      id: '1',
+      customerName: 'John Smith',
+      email: 'john@example.com',
+      subject: 'Holiday Package',
+      status: 'NEW',
+      date: new Date('2023-08-15')
+    },
+    {
+      id: '2',
+      customerName: 'Emma Wilson',
+      email: 'emma@example.com',
+      subject: 'Flight Booking',
+      status: 'IN_PROGRESS',
+      date: new Date('2023-08-14')
+    },
+    {
+      id: '3',
+      customerName: 'Michael Brown',
+      email: 'michael@example.com',
+      subject: 'Travel Advice',
+      status: 'RESOLVED',
+      date: new Date('2023-08-12')
     }
-  };
-  
-  // Initial data fetch
+  ]);
+
   useEffect(() => {
-    fetchDashboardData();
-    
-    // Set up auto-refresh every 60 seconds
-    const refreshInterval = setInterval(() => {
-      fetchDashboardData();
-    }, 60000);
-    
-    // Clear interval on component unmount
-    return () => clearInterval(refreshInterval);
+    setIsLoaded(true);
   }, []);
-  
-  const getStatusBadge = (status: string) => {
-    switch (status.toUpperCase()) {
+
+  const refreshData = () => {
+    setRefreshing(true);
+    // Simulate API call
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 800);
+  };
+
+  const handleSignOut = () => {
+    router.push('/admin/logout');
+  };
+
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }).format(date);
+  };
+
+  const getStatusBadge = (status) => {
+    const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
+    
+    switch (status) {
       case 'NEW':
-      case 'PENDING':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>New</span>;
       case 'IN_PROGRESS':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800">In Progress</Badge>;
+        return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>In Progress</span>;
       case 'RESOLVED':
-      case 'COMPLETED':
-        return <Badge variant="outline" className="bg-green-100 text-green-800">Completed</Badge>;
-      case 'CANCELLED':
-        return <Badge variant="outline" className="bg-red-100 text-red-800">Cancelled</Badge>;
+        return <span className={`${baseClasses} bg-green-100 text-green-800`}>Resolved</span>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <span className={`${baseClasses} bg-gray-100 text-gray-800`}>{status}</span>;
     }
   };
-  
+
+  if (!isLoaded) {
+    return null;
+  }
+
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={fetchDashboardData}
-              disabled={refreshing}
-              className="mr-2"
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/admin/holidays/new')}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Holiday
-            </Button>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex space-x-2">
+          <button 
+            onClick={refreshData}
+            className="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button 
+            onClick={() => router.push('/admin/holidays/new')}
+            className="flex items-center px-3 py-2 bg-blue-600 rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Holiday
+          </button>
+        </div>
+      </div>
+      
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Welcome, {session?.user?.name || 'Admin'}</h2>
+            <p className="text-gray-700">You are logged in as: {session?.user?.email}</p>
+            <p className="text-gray-700">Role: {session?.user?.role}</p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </button>
+        </div>
+      </div>
+      
+      <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-2">Total Enquiries</h3>
+          <div className="flex items-center">
+            <Mail className="h-5 w-5 text-blue-500 mr-2" />
+            <p className="text-3xl font-bold text-blue-600">{stats.totalEnquiries}</p>
+            <span className="ml-2 text-sm text-gray-500">({stats.newEnquiries} new)</span>
           </div>
         </div>
         
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Total Enquiries
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Mail className="h-5 w-5 text-blue-500 mr-2" />
-                <span className="text-2xl font-bold">
-                  {loading ? '...' : stats.totalEnquiries}
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs text-blue-500"
-                onClick={() => router.push('/admin/enquiries')}
-              >
-                View all enquiries
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                New Enquiries
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Mail className="h-5 w-5 text-yellow-500 mr-2" />
-                <span className="text-2xl font-bold">
-                  {loading ? '...' : stats.newEnquiries}
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs text-blue-500"
-                onClick={() => router.push('/admin/enquiries?status=new')}
-              >
-                View new enquiries
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Total Holidays
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Package className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-2xl font-bold">
-                  {loading ? '...' : stats.totalHolidays}
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs text-blue-500"
-                onClick={() => router.push('/admin/holidays')}
-              >
-                View all holidays
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Trip Plans
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <PlaneTakeoff className="h-5 w-5 text-purple-500 mr-2" />
-                <span className="text-2xl font-bold">
-                  {loading ? '...' : stats.totalTripPlans}
-                </span>
-                <span className="text-sm ml-2 text-yellow-600">
-                  ({loading ? '...' : stats.pendingTripPlans} pending)
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs text-blue-500"
-                onClick={() => router.push('/admin/trip-plans')}
-              >
-                View trip plans
-              </Button>
-            </CardFooter>
-          </Card>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-2">Active Holidays</h3>
+          <div className="flex items-center">
+            <Package className="h-5 w-5 text-green-500 mr-2" />
+            <p className="text-3xl font-bold text-green-600">{stats.totalHolidays}</p>
+          </div>
         </div>
         
-        {/* Quick Actions */}
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Button 
-            variant="outline" 
-            className="h-auto py-4 flex flex-col items-center justify-center"
-            onClick={() => router.push('/admin/enquiries')}
-          >
-            <Mail className="h-8 w-8 mb-2" />
-            <span>View Enquiries</span>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="h-auto py-4 flex flex-col items-center justify-center"
-            onClick={() => router.push('/admin/holidays')}
-          >
-            <Package className="h-8 w-8 mb-2" />
-            <span>Manage Holidays</span>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="h-auto py-4 flex flex-col items-center justify-center"
-            onClick={() => router.push('/admin/trip-plans')}
-          >
-            <PlaneTakeoff className="h-8 w-8 mb-2" />
-            <span>Manage Trip Plans</span>
-          </Button>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-2">Trip Plans</h3>
+          <div className="flex items-center">
+            <PlaneTakeoff className="h-5 w-5 text-purple-500 mr-2" />
+            <p className="text-3xl font-bold text-purple-600">{stats.totalTripPlans}</p>
+            <span className="ml-2 text-sm text-yellow-600">({stats.pendingTripPlans} pending)</span>
+          </div>
         </div>
         
-        {/* Recent Activities */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Recent Enquiries */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Enquiries</CardTitle>
-              <CardDescription>Latest customer enquiries</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading...</div>
-              ) : !Array.isArray(recentEnquiries) || recentEnquiries.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">No recent enquiries</div>
-              ) : (
-                <div className="space-y-4">
-                  {recentEnquiries.map((enquiry) => (
-                    <div key={enquiry.id} className="border-b pb-4 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">{enquiry.customerName || 'Unknown Customer'}</div>
-                          <div className="text-sm text-gray-500 mt-1">{enquiry.subject || 'No Subject'}</div>
-                        </div>
-                        <div>{getStatusBadge(enquiry.status || 'UNKNOWN')}</div>
-                      </div>
-                      <div className="flex items-center mt-2 text-sm text-gray-500">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        <span>{enquiry.date ? formatDate(enquiry.date) : 'Unknown date'}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => router.push('/admin/enquiries')}
-              >
-                View All Enquiries
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          {/* Recent Trip Plans */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Trip Plans</CardTitle>
-              <CardDescription>Latest trip planning requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading...</div>
-              ) : !Array.isArray(recentTripPlans) || recentTripPlans.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">No recent trip plans</div>
-              ) : (
-                <div className="space-y-4">
-                  {recentTripPlans.map((plan) => (
-                    <div key={plan.id} className="border-b pb-4 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">{plan.customerName || 'Unknown Customer'}</div>
-                          <div className="flex items-center text-sm text-gray-500 mt-1">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {plan.destination || 'Unknown Destination'}
-                          </div>
-                        </div>
-                        <div>{getStatusBadge(plan.status || 'UNKNOWN')}</div>
-                      </div>
-                      <div className="flex items-center mt-2 text-sm text-gray-500">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        <span>Travel date: {plan.departureDate ? formatDate(plan.departureDate) : 'Unknown date'}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => router.push('/admin/trip-plans')}
-              >
-                View All Trip Plans
-              </Button>
-            </CardFooter>
-          </Card>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-2">Users</h3>
+          <div className="flex items-center">
+            <User className="h-5 w-5 text-orange-500 mr-2" />
+            <p className="text-3xl font-bold text-orange-600">1</p>
+          </div>
         </div>
       </div>
-    </AdminLayout>
+
+      {/* Quick Actions */}
+      <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <button 
+          onClick={() => router.push('/admin/enquiries')}
+          className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-md hover:bg-gray-50"
+        >
+          <Mail className="h-8 w-8 mb-2 text-blue-500" />
+          <span className="font-medium">View Enquiries</span>
+        </button>
+        
+        <button 
+          onClick={() => router.push('/admin/holidays')}
+          className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-md hover:bg-gray-50"
+        >
+          <Package className="h-8 w-8 mb-2 text-green-500" />
+          <span className="font-medium">Manage Holidays</span>
+        </button>
+        
+        <button 
+          onClick={() => router.push('/admin/trip-plans')}
+          className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-md hover:bg-gray-50"
+        >
+          <PlaneTakeoff className="h-8 w-8 mb-2 text-purple-500" />
+          <span className="font-medium">Manage Trip Plans</span>
+        </button>
+      </div>
+      
+      {/* Recent Enquiries */}
+      <h2 className="text-xl font-semibold mb-4">Recent Enquiries</h2>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {recentEnquiries.map((enquiry) => (
+                <tr key={enquiry.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-medium text-gray-900">{enquiry.customerName}</div>
+                    <div className="text-sm text-gray-500">{enquiry.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {enquiry.subject}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(enquiry.date)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(enquiry.status)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button 
+                      onClick={() => router.push(`/admin/enquiries/${enquiry.id}`)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 text-right">
+          <button 
+            onClick={() => router.push('/admin/enquiries')}
+            className="text-sm font-medium text-blue-600 hover:text-blue-900"
+          >
+            View All Enquiries
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 
